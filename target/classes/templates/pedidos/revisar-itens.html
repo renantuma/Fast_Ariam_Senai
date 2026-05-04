@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Revisar Itens — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title"><i class="bi bi-pencil-square me-2 text-muted"></i>Revisar Itens do Pedido</span>
+</div>
+
+<main id="main">
+  <div class="step-bar mb-4">
+    <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:.8rem;"></i></div><div class="step-label">Upload PDF</div></div>
+    <div class="step-item active"><div class="step-num">2</div><div class="step-label">Revisar Itens</div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-label">Volumetria</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-label">Frete</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-label">Proposta</div></div>
+  </div>
+
+  <div th:if="${nomeArquivo}" class="fa-alert alert alert-info d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+    <span>PDF lido: <strong th:text="${nomeArquivo}"></strong></span>
+  </div>
+
+  <form th:action="@{/pedidos/calcular-volumetria}" method="post" id="formItens">
+    <div class="fa-card mb-3">
+      <div class="fa-card-header">
+        <div>
+          <span class="fa-card-title">Itens Identificados</span>
+          <div class="text-muted" style="font-size:.8rem;" id="countInfo">Carregando...</div>
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" id="numPedido" name="numeroPedido"
+                 placeholder="Nº do Pedido (ex: PCD-2024-001)" style="width:220px;"/>
+          <button type="button" onclick="adicionarLinha()" class="btn-outline-fa btn btn-sm">
+            <i class="bi bi-plus me-1"></i>Adicionar Item
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="fa-table" id="tabelaItens">
+          <thead>
+            <tr>
+              <th style="width:140px;">Código Original</th>
+              <th>Descrição Original</th>
+              <th style="width:90px;">Qtd</th>
+              <th style="width:260px;">Produto no Catálogo</th>
+              <th style="width:110px;">Tipo</th>
+              <th style="width:50px;"></th>
+            </tr>
+          </thead>
+          <tbody id="tbodyItens">
+            <!-- Itens extraídos do PDF ou linha vazia para entrada manual -->
+            <tr th:if="${#lists.isEmpty(itensExtraidos)}" id="templateRow" class="item-row">
+              <td><input type="text" name="codigos" class="form-control form-control-sm" placeholder="COD-001"/></td>
+              <td><input type="text" name="descricoes" class="form-control form-control-sm" placeholder="Descrição do item"/></td>
+              <td><input type="number" name="quantidades" class="form-control form-control-sm" min="1" value="1"/></td>
+              <td>
+                <select name="produtoIds" class="form-select form-select-sm produto-select">
+                  <option value="0">— selecionar produto —</option>
+                  <option th:each="p : ${produtos}" th:value="${p.id}"
+                          th:text="${p.codigo + ' — ' + p.descricao}"
+                          th:attr="data-tipo=${p.tipo}"></option>
+                </select>
+              </td>
+              <td><span class="tipo-badge badge bg-secondary">—</span></td>
+              <td><button type="button" onclick="removerLinha(this)" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></button></td>
+            </tr>
+
+            <!-- Itens extraídos -->
+            <tr th:each="item,iStat : ${itensExtraidos}" class="item-row"
+                th:classappend="${item.identificado} ? '' : 'table-warning'">
+              <td>
+                <input type="text" name="codigos" class="form-control form-control-sm"
+                       th:value="${item.codigoOriginal}"/>
+              </td>
+              <td>
+                <input type="text" name="descricoes" class="form-control form-control-sm"
+                       th:value="${item.descricaoOriginal}"/>
+              </td>
+              <td>
+                <input type="number" name="quantidades" class="form-control form-control-sm"
+                       min="1" th:value="${item.quantidade}"/>
+              </td>
+              <td>
+                <select name="produtoIds" class="form-select form-select-sm produto-select">
+                  <option value="0">— selecionar —</option>
+                  <option th:each="p : ${produtos}" th:value="${p.id}"
+                          th:text="${p.codigo + ' — ' + p.descricao}"
+                          th:attr="data-tipo=${p.tipo}"
+                          th:selected="${p.id == item.produtoId}"></option>
+                </select>
+              </td>
+              <td>
+                <span class="tipo-badge badge"
+                      th:classappend="${item.identificado} ? 'bg-success' : 'bg-warning text-dark'">
+                  <span th:if="${item.identificado and item.produtoNome != null}">
+                    Identificado
+                  </span>
+                  <span th:unless="${item.identificado}">Não identificado</span>
+                </span>
+              </td>
+              <td>
+                <button type="button" onclick="removerLinha(this)" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+      <a th:href="@{/pedidos/novo}" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+      </a>
+      <button type="submit" class="btn-fa-orange btn px-5">
+        Calcular Volumetria <i class="bi bi-calculator ms-2"></i>
+      </button>
+    </div>
+  </form>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function updateCount() {
+  const rows = document.querySelectorAll('#tbodyItens .item-row');
+  const naoId = document.querySelectorAll('#tbodyItens .item-row.table-warning').length;
+  document.getElementById('countInfo').textContent =
+    rows.length + ' iten(s)' + (naoId > 0 ? ' — ' + naoId + ' não identificado(s), verifique' : '');
+}
+
+function adicionarLinha() {
+  const tbody = document.getElementById('tbodyItens');
+  const template = document.querySelector('.item-row');
+  const nova = template.cloneNode(true);
+  nova.querySelectorAll('input').forEach(i => { if (i.type !== 'number') i.value = ''; else i.value = 1; });
+  nova.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  nova.querySelectorAll('.tipo-badge').forEach(b => { b.className = 'tipo-badge badge bg-secondary'; b.textContent = '—'; });
+  nova.classList.remove('table-warning');
+  tbody.appendChild(nova);
+  updateCount();
+  bindSelects();
+}
+
+function removerLinha(btn) {
+  const rows = document.querySelectorAll('#tbodyItens .item-row');
+  if (rows.length <= 1) { alert('O pedido precisa ter ao menos um item.'); return; }
+  btn.closest('tr').remove();
+  updateCount();
+}
+
+function bindSelects() {
+  document.querySelectorAll('.produto-select').forEach(sel => {
+    sel.addEventListener('change', function() {
+      const opt = this.options[this.selectedIndex];
+      const badge = this.closest('tr').querySelector('.tipo-badge');
+      const tipo = opt.getAttribute('data-tipo');
+      if (tipo === 'REFRIGERADO') {
+        badge.className = 'tipo-badge badge bg-info text-dark';
+        badge.textContent = 'Refrigerado';
+      } else if (tipo === 'LINHA_SECA') {
+        badge.className = 'tipo-badge badge bg-success';
+        badge.textContent = 'Linha Seca';
+      } else {
+        badge.className = 'tipo-badge badge bg-secondary';
+        badge.textContent = '—';
+      }
+    });
+  });
+}
+
+bindSelects();
+updateCount();
+</script>
+</body>
+</html>

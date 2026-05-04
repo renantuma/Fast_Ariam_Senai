@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Usuários — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title">Gerenciamento de Usuários</span>
+  <button class="btn-fa btn" data-bs-toggle="modal" data-bs-target="#modalUsuario" onclick="novoUsuario()">
+    <i class="bi bi-person-plus me-1"></i>Novo Usuário
+  </button>
+</div>
+
+<main id="main">
+  <div th:if="${sucesso}" class="fa-alert alert alert-success mb-3">
+    <i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span>
+  </div>
+
+  <div class="fa-card">
+    <table class="fa-table">
+      <thead>
+        <tr><th>Usuário</th><th>Nome</th><th>Perfil</th><th>Último Acesso</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="u : ${usuarios}">
+          <td><code th:text="${u.username}"></code></td>
+          <td th:text="${u.nome}"></td>
+          <td>
+            <span th:if="${u.perfil.name() == 'ADMINISTRADOR'}" class="badge bg-danger">Administrador</span>
+            <span th:if="${u.perfil.name() == 'OPERADOR'}" class="badge bg-primary">Operador</span>
+          </td>
+          <td class="text-muted"
+              th:text="${u.ultimoAcesso != null ? #temporals.format(u.ultimoAcesso,'dd/MM/yyyy HH:mm') : '—'}"></td>
+          <td>
+            <span th:if="${u.ativo}" class="badge bg-success">Ativo</span>
+            <span th:unless="${u.ativo}" class="badge bg-secondary">Inativo</span>
+          </td>
+          <td class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary rounded-pill"
+                    data-bs-toggle="modal" data-bs-target="#modalUsuario"
+                    th:onclick="'editarUsuario('+${u.id}+',\''+${u.username}+'\',\''+${u.nome}+'\',\''+${u.perfil}+'\')'">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <form th:action="@{/admin/usuarios/{id}/toggle(id=${u.id})}" method="post" class="d-inline">
+              <button type="submit" class="btn btn-sm rounded-pill"
+                      th:classappend="${u.ativo} ? 'btn-outline-warning' : 'btn-outline-success'"
+                      th:title="${u.ativo} ? 'Desativar' : 'Ativar'">
+                <i class="bi" th:classappend="${u.ativo} ? 'bi-person-dash' : 'bi-person-check'"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="background:#00478D;color:#fff;border-radius:16px 16px 0 0;border:none;">
+        <h5 class="modal-title" id="modalUsuarioTitulo">Novo Usuário</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form th:action="@{/admin/usuarios/salvar}" method="post" class="fa-form">
+        <input type="hidden" name="id" id="usuarioId"/>
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Username *</label>
+              <input type="text" name="username" id="usuarioUsername" class="form-control" required placeholder="joao.silva"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nome Completo *</label>
+              <input type="text" name="nome" id="usuarioNome" class="form-control" required placeholder="João Silva"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Perfil *</label>
+              <select name="perfil" id="usuarioPerfil" class="form-select" required>
+                <option value="OPERADOR">Operador</option>
+                <option value="ADMINISTRADOR">Administrador</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Senha <span id="senhaHint" class="text-muted" style="font-weight:400;">(deixe em branco para manter)</span></label>
+              <input type="password" name="senha" id="usuarioSenha" class="form-control" placeholder="••••••••"/>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-fa btn px-5">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function novoUsuario() {
+  document.getElementById('modalUsuarioTitulo').textContent = 'Novo Usuário';
+  document.getElementById('usuarioId').value = '';
+  document.getElementById('usuarioUsername').value = '';
+  document.getElementById('usuarioNome').value = '';
+  document.getElementById('usuarioPerfil').value = 'OPERADOR';
+  document.getElementById('usuarioSenha').value = '';
+  document.getElementById('senhaHint').textContent = '(obrigatória para novo usuário)';
+}
+function editarUsuario(id, username, nome, perfil) {
+  document.getElementById('modalUsuarioTitulo').textContent = 'Editar Usuário';
+  document.getElementById('usuarioId').value = id;
+  document.getElementById('usuarioUsername').value = username;
+  document.getElementById('usuarioNome').value = nome;
+  document.getElementById('usuarioPerfil').value = perfil;
+  document.getElementById('usuarioSenha').value = '';
+  document.getElementById('senhaHint').textContent = '(deixe em branco para manter)';
+}
+</script>
+</body>
+</html>

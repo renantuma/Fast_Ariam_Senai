@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}">
+  <title>Dashboard — Fast Ariam</title>
+</head>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard — Fast Ariam Logística</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+
+<div id="topbar">
+  <span class="topbar-title">Dashboard</span>
+  <a th:href="@{/pedidos/novo}" class="btn-fa-orange btn d-flex align-items-center gap-2">
+    <i class="bi bi-plus-lg"></i> Novo Pedido
+  </a>
+</div>
+
+<main id="main">
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="kpi-card" style="background: linear-gradient(135deg,#00478D,#0060C0);">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label text-white">Total Pedidos</div>
+            <div class="kpi-value text-white" th:text="${totalPedidos}">0</div>
+          </div>
+          <i class="bi bi-file-earmark-text kpi-icon text-white"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card" style="background: linear-gradient(135deg,#EB5E28,#FF7A47);">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label text-white">Propostas Geradas</div>
+            <div class="kpi-value text-white" th:text="${propostasGeradas}">0</div>
+          </div>
+          <i class="bi bi-file-check kpi-icon text-white"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card" style="background: linear-gradient(135deg,#059669,#10B981);">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label text-white">Produtos Cadastrados</div>
+            <div class="kpi-value text-white" th:text="${totalProdutos}">0</div>
+          </div>
+          <i class="bi bi-box-seam kpi-icon text-white"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="kpi-card" style="background: linear-gradient(135deg,#7C3AED,#9F67FF);">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="kpi-label text-white">Cidades Cadastradas</div>
+            <div class="kpi-value text-white" th:text="${totalCidades}">0</div>
+          </div>
+          <i class="bi bi-geo-alt kpi-icon text-white"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pedidos Recentes -->
+  <div class="fa-card">
+    <div class="fa-card-header">
+      <span class="fa-card-title">Pedidos Recentes</span>
+      <a th:href="@{/pedidos}" class="btn-outline-fa btn btn-sm">Ver todos</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(pedidosRecentes)}" class="text-center py-5 text-muted">
+      <i class="bi bi-inbox" style="font-size:2.5rem; display:block; margin-bottom:12px;"></i>
+      Nenhum pedido encontrado.<br/>
+      <a th:href="@{/pedidos/novo}" class="btn-fa btn mt-3">Criar primeiro pedido</a>
+    </div>
+
+    <table th:unless="${#lists.isEmpty(pedidosRecentes)}" class="fa-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nº Pedido</th>
+          <th>Cliente</th>
+          <th>Destino</th>
+          <th>Volume (m³)</th>
+          <th>Veículo</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${pedidosRecentes}">
+          <td class="text-muted" th:text="${p.id}"></td>
+          <td>
+            <span th:text="${p.numeroPedido ?: '—'}" class="fw-500"></span>
+          </td>
+          <td th:text="${p.cliente != null ? p.cliente.nome : '—'}"></td>
+          <td>
+            <span th:if="${p.cidadeDestino != null}"
+                  th:text="${p.cidadeDestino.nome + '/' + p.cidadeDestino.estado}"></span>
+            <span th:unless="${p.cidadeDestino != null}" class="text-muted">—</span>
+          </td>
+          <td th:text="${#numbers.formatDecimal(p.volumeTotalM3, 1, 3)}"></td>
+          <td>
+            <span th:if="${p.veiculoConfirmado != null}" th:text="${p.veiculoConfirmado.descricao}"
+                  class="badge bg-primary rounded-pill"></span>
+            <span th:if="${p.veiculoSugerido != null and p.veiculoConfirmado == null}"
+                  th:text="${p.veiculoSugerido.descricao + '*'}" class="badge bg-secondary rounded-pill"></span>
+          </td>
+          <td>
+            <span class="badge-status"
+                  th:classappend="'badge-' + ${#strings.toLowerCase(p.status.name())}"
+                  th:text="${p.status.name().replace('_',' ')}"></span>
+          </td>
+          <td class="text-muted" th:text="${#temporals.format(p.criadoEm,'dd/MM/yy HH:mm')}"></td>
+          <td>
+            <a th:href="@{/pedidos/{id}(id=${p.id})}" class="btn btn-sm btn-outline-secondary rounded-pill">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="row g-3 mt-2">
+    <div class="col-md-4">
+      <a th:href="@{/pedidos/novo}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:44px;height:44px;border-radius:12px;background:#EEF5FF;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-file-earmark-plus" style="color:#00478D;font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;color:#1A1D2E;">Novo Pedido</div>
+            <div style="font-size:.8rem;color:#6B7280;">Upload PDF ou manual</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a th:href="@{/admin/produtos}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:44px;height:44px;border-radius:12px;background:#FFF1EC;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-box-seam" style="color:#EB5E28;font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;color:#1A1D2E;">Catálogo de Produtos</div>
+            <div style="font-size:.8rem;color:#6B7280;">Linha seca e refrigerados</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a th:href="@{/admin/cidades}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:44px;height:44px;border-radius:12px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-geo-alt" style="color:#059669;font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;color:#1A1D2E;">Tabela de Cidades</div>
+            <div style="font-size:.8rem;color:#6B7280;">Fretes e distâncias</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+// Highlight active sidebar link
+document.querySelectorAll('.sidebar-link').forEach(l => {
+  if (l.getAttribute('href') === window.location.pathname) l.classList.add('active');
+});
+</script>
+</body>
+</html>

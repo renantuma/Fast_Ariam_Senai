@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Clientes — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title">Clientes e Fatores de Descarga</span>
+  <button class="btn-fa btn" data-bs-toggle="modal" data-bs-target="#modalCliente" onclick="novoCliente()">
+    <i class="bi bi-plus-lg me-1"></i>Novo Cliente
+  </button>
+</div>
+
+<main id="main">
+  <div th:if="${sucesso}" class="fa-alert alert alert-success mb-3">
+    <i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="fa-card" style="border-left: 4px solid #059669;">
+        <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 1,0x (Padrão)</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
+             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 1.0).count()}">0</div>
+        <div style="font-size:.8rem;color:#6B7280;">Clientes com descarga normal</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="fa-card" style="border-left: 4px solid #EB5E28;">
+        <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 1,5x (Especial)</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
+             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 1.5).count()}">0</div>
+        <div style="font-size:.8rem;color:#6B7280;">Custo de descarga 50% maior</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="fa-card" style="border-left: 4px solid #DC2626;">
+        <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 2,0x (Duplo)</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
+             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 2.0).count()}">0</div>
+        <div style="font-size:.8rem;color:#6B7280;">Custo de descarga dobrado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fa-card">
+    <table class="fa-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Fator de Descarga</th>
+          <th>Impacto</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${clientes}">
+          <td><strong th:text="${c.nome}"></strong></td>
+          <td>
+            <span class="badge rounded-pill px-3"
+                  th:classappend="${c.fatorDescarga == 1.0 ? 'bg-success' : (c.fatorDescarga == 1.5 ? 'bg-warning text-dark' : 'bg-danger')}"
+                  th:text="${c.fatorDescarga + 'x'}"></span>
+          </td>
+          <td style="font-size:.82rem;color:#6B7280;">
+            <span th:if="${c.fatorDescarga == 1.0}">Descarga padrão</span>
+            <span th:if="${c.fatorDescarga == 1.5}">+50% no custo de descarga</span>
+            <span th:if="${c.fatorDescarga == 2.0}">+100% no custo de descarga</span>
+          </td>
+          <td>
+            <span th:if="${c.ativo}" class="badge bg-success">Ativo</span>
+            <span th:unless="${c.ativo}" class="badge bg-secondary">Inativo</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary rounded-pill"
+                    data-bs-toggle="modal" data-bs-target="#modalCliente"
+                    th:onclick="'editarCliente('+${c.id}+',\''+${c.nome}+'\','+${c.fatorDescarga}+')'">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal fade" id="modalCliente" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="background:#00478D;color:#fff;border-radius:16px 16px 0 0;border:none;">
+        <h5 class="modal-title" id="modalClienteTitulo">Novo Cliente</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form th:action="@{/admin/clientes/salvar}" method="post" class="fa-form">
+        <input type="hidden" name="id" id="clienteId"/>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label">Nome do Cliente *</label>
+            <input type="text" name="nome" id="clienteNome" class="form-control" required placeholder="Ex: Carrefour"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fator de Descarga *</label>
+            <select name="fatorDescarga" id="clienteFator" class="form-select" required>
+              <option value="1.0">1,0x — Padrão (demais clientes)</option>
+              <option value="1.5">1,5x — Especial (BIG, Carrefour, Walmart…)</option>
+              <option value="2.0">2,0x — Duplo (Atakarejo, Koch…)</option>
+            </select>
+          </div>
+          <div class="fa-alert alert alert-info py-2" style="font-size:.82rem;">
+            <i class="bi bi-info-circle me-1"></i>
+            O fator multiplica os valores de descarga manual (Truck e Carreta) no cálculo do frete.
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-fa btn px-5">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function novoCliente() {
+  document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
+  document.getElementById('clienteId').value = '';
+  document.getElementById('clienteNome').value = '';
+  document.getElementById('clienteFator').value = '1.0';
+}
+function editarCliente(id, nome, fator) {
+  document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
+  document.getElementById('clienteId').value = id;
+  document.getElementById('clienteNome').value = nome;
+  document.getElementById('clienteFator').value = String(fator);
+}
+</script>
+</body>
+</html>

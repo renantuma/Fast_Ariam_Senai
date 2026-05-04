@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cálculo de Frete — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title"><i class="bi bi-calculator me-2 text-muted"></i>Cálculo de Frete</span>
+</div>
+
+<main id="main">
+  <div class="step-bar mb-4">
+    <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:.8rem;"></i></div><div class="step-label">Upload PDF</div></div>
+    <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:.8rem;"></i></div><div class="step-label">Revisar Itens</div></div>
+    <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:.8rem;"></i></div><div class="step-label">Volumetria</div></div>
+    <div class="step-item active"><div class="step-num">4</div><div class="step-label">Frete</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-label">Proposta</div></div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Resultado da volumetria -->
+    <div class="col-md-4">
+      <div class="vol-box mb-3">
+        <div class="vol-label mb-1">VOLUME TOTAL CALCULADO</div>
+        <div class="vol-num" th:text="${#numbers.formatDecimal(pedido.volumeTotalM3, 1, 3) + ' m³'}">0 m³</div>
+        <hr style="border-color:rgba(255,255,255,.2); margin: 12px 0;"/>
+        <div class="d-flex justify-content-between" style="font-size:.82rem;">
+          <span style="opacity:.75;">Metros carroceria</span>
+          <span th:text="${#numbers.formatDecimal(pedido.metrosCarroceria,1,2) + ' m'}"></span>
+        </div>
+        <div class="d-flex justify-content-between" style="font-size:.82rem;">
+          <span style="opacity:.75;">Com margem NVIA (+10%)</span>
+          <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemNvia,1,2) + ' m'}"></span>
+        </div>
+        <div class="d-flex justify-content-between" style="font-size:.82rem;">
+          <span style="opacity:.75;">Com margem Venda (+20%)</span>
+          <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemVenda,1,2) + ' m'}"></span>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-title mb-2">Veículo Sugerido</div>
+        <div class="d-flex align-items-center gap-3">
+          <div style="width:48px;height:48px;border-radius:12px;background:#EEF5FF;display:flex;align-items:center;justify-content:center;">
+            <i class="bi bi-truck" style="font-size:1.4rem;color:#00478D;"></i>
+          </div>
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.1rem;"
+                 th:text="${pedido.veiculoSugerido?.descricao ?: '—'}">—</div>
+            <div class="text-muted" style="font-size:.8rem;"
+                 th:text="${pedido.veiculoSugerido?.observacao ?: ''}"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulário de frete -->
+    <div class="col-md-8">
+      <div class="fa-card">
+        <div class="fa-card-title mb-4">Informações para Cálculo de Frete</div>
+        <form th:action="@{/pedidos/{id}/calcular-frete(id=${pedido.id})}" method="post" class="fa-form" id="formFrete">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Cidade de Destino</label>
+              <input type="text" name="nomeCidade" id="inputCidade" class="form-control"
+                     placeholder="Ex: São Paulo" required autocomplete="off"
+                     th:value="${pedido.cidadeDestino?.nome}"/>
+              <div id="sugestoesCidade" class="list-group mt-1 position-absolute" style="z-index:100;min-width:300px;display:none;"></div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Estado (UF)</label>
+              <select name="estado" id="selectEstado" class="form-select" required>
+                <option value="">— UF —</option>
+                <option th:each="est : ${estados}" th:value="${est}" th:text="${est}"
+                        th:selected="${pedido.cidadeDestino?.estado == est}"></option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Valor da Mercadoria (R$)</label>
+              <input type="number" name="valorMercadoria" class="form-control"
+                     step="0.01" min="0" placeholder="0,00" value="0"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Cliente</label>
+              <select name="clienteId" class="form-select">
+                <option value="0">— Selecionar cliente (opcional) —</option>
+                <option th:each="c : ${clientes}" th:value="${c.id}"
+                        th:text="${c.nome + ' (fator: ' + c.fatorDescarga + 'x)'}"
+                        th:selected="${pedido.cliente?.id == c.id}"></option>
+              </select>
+              <div class="text-muted mt-1" style="font-size:.75rem;">O fator de descarga do cliente será aplicado automaticamente.</div>
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex justify-content-between">
+            <a th:href="@{/pedidos/{id}(id=${pedido.id})}" class="btn btn-outline-secondary rounded-pill px-4">
+              <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+            <button type="submit" class="btn-fa-orange btn px-5">
+              Calcular Frete <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Resultado (se já calculado via flash) -->
+      <div th:if="${frete}" class="fa-card mt-3">
+        <div class="fa-card-title mb-3">
+          Resultado do Frete —
+          <span th:text="${frete.cidadeDestino + '/' + frete.estadoDestino}"></span>
+          <span class="badge bg-secondary ms-2" th:if="${frete.cidadeViaApi}">via API</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="frete-card" onclick="selecionarVeiculo(this,'TRUCK')">
+              <div class="frete-tipo mb-1"><i class="bi bi-truck me-2"></i>Truck</div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalTruck,1,'POINT',2,'COMMA')}"></div>
+              <div class="text-muted" style="font-size:.78rem; margin-top:6px;">
+                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.freteBaseTruck,1,'POINT',2,'COMMA')}"></span>
+                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.pedagioTruck,1,'POINT',2,'COMMA')}"></span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="frete-card" onclick="selecionarVeiculo(this,'CARRETA')">
+              <div class="frete-tipo mb-1"><i class="bi bi-truck me-2"></i>Carreta</div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalCarreta,1,'POINT',2,'COMMA')}"></div>
+              <div class="text-muted" style="font-size:.78rem; margin-top:6px;">
+                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.freteBaseCarreta,1,'POINT',2,'COMMA')}"></span>
+                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.pedagioCarreta,1,'POINT',2,'COMMA')}"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-muted mt-2" style="font-size:.78rem;">
+          ICMS: <th:block th:text="${frete.icmsPercent}"></th:block>%
+          | PIS/COFINS: <th:block th:text="${frete.pisCofinsPercent}"></th:block>%
+          | Margem Comercial: <th:block th:text="${frete.margemComercialPercent}"></th:block>%
+          | Distância: <th:block th:text="${frete.distanciaKm}"></th:block> km
+        </div>
+
+        <a th:href="@{/pedidos/{id}/proposta(id=${pedido.id})}" class="btn-fa btn mt-3 d-inline-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-check"></i> Avançar para Proposta
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Autocomplete de cidades
+const inputCidade = document.getElementById('inputCidade');
+const sugestoes = document.getElementById('sugestoesCidade');
+let debounce;
+
+inputCidade.addEventListener('input', function() {
+  clearTimeout(debounce);
+  const val = this.value.trim();
+  if (val.length < 2) { sugestoes.style.display = 'none'; return; }
+  debounce = setTimeout(() => {
+    fetch('/api/cidades/buscar?nome=' + encodeURIComponent(val))
+      .then(r => r.json())
+      .then(data => {
+        sugestoes.innerHTML = '';
+        if (data.length === 0) { sugestoes.style.display = 'none'; return; }
+        data.slice(0,8).forEach(c => {
+          const a = document.createElement('a');
+          a.href = '#';
+          a.className = 'list-group-item list-group-item-action py-2';
+          a.style.fontSize = '.88rem';
+          a.innerHTML = `<strong>${c.nome}</strong> <span class="text-muted ms-1">${c.estado}</span> <span class="badge bg-light text-dark ms-2">${c.distanciaKm} km</span>`;
+          a.addEventListener('click', e => {
+            e.preventDefault();
+            inputCidade.value = c.nome;
+            document.getElementById('selectEstado').value = c.estado;
+            sugestoes.style.display = 'none';
+          });
+          sugestoes.appendChild(a);
+        });
+        sugestoes.style.display = 'block';
+      });
+  }, 300);
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#inputCidade') && !e.target.closest('#sugestoesCidade')) {
+    sugestoes.style.display = 'none';
+  }
+});
+
+function selecionarVeiculo(el, tipo) {
+  document.querySelectorAll('.frete-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>

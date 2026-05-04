@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Novo Pedido — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title"><i class="bi bi-plus-circle me-2 text-muted"></i>Novo Pedido</span>
+</div>
+
+<main id="main">
+  <!-- Steps -->
+  <div class="step-bar mb-4">
+    <div class="step-item active">
+      <div class="step-num">1</div>
+      <div class="step-label">Upload PDF</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-label">Revisar Itens</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-label">Volumetria</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">4</div>
+      <div class="step-label">Frete</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">5</div>
+      <div class="step-label">Proposta</div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Upload PDF -->
+    <div class="col-md-7">
+      <div class="fa-card">
+        <div class="fa-card-header">
+          <span class="fa-card-title"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Upload do Pedido (PDF)</span>
+        </div>
+
+        <form th:action="@{/pedidos/upload-pdf}" method="post" enctype="multipart/form-data" id="formUpload">
+          <div class="mb-4">
+            <div id="dropZone" class="text-center p-5" style="border: 2px dashed #CBD5E0; border-radius: 14px; cursor: pointer; transition: all .2s; background: #F8FAFF;">
+              <i class="bi bi-cloud-upload" style="font-size: 2.5rem; color: #00478D; display:block; margin-bottom: 12px;"></i>
+              <div style="font-weight: 600; color: #1A1D2E; margin-bottom: 6px;">Arraste o PDF aqui</div>
+              <div class="text-muted" style="font-size: .85rem;">ou clique para selecionar (máx. 20 MB)</div>
+              <input type="file" name="arquivo" id="fileInput" accept=".pdf" required style="display:none;"/>
+            </div>
+            <div id="fileInfo" class="mt-2 d-none">
+              <div class="d-flex align-items-center gap-2 p-2 rounded" style="background: #EEF5FF;">
+                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                <span id="fileName" class="fw-500 flex-grow-1"></span>
+                <button type="button" onclick="clearFile()" class="btn btn-sm btn-link text-danger p-0">
+                  <i class="bi bi-x-circle"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button type="submit" class="btn-fa btn px-5" id="btnUpload" disabled>
+              <i class="bi bi-magic me-2"></i>Extrair Itens Automaticamente
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-4"/>
+
+        <div class="text-center">
+          <p class="text-muted mb-3" style="font-size:.88rem;">Prefere inserir os itens manualmente?</p>
+          <a th:href="@{/pedidos/revisar-itens}" class="btn-outline-fa btn">
+            <i class="bi bi-pencil-square me-2"></i>Entrada Manual
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info lateral -->
+    <div class="col-md-5">
+      <div class="fa-card mb-3" style="background: linear-gradient(135deg, #00478D, #0060C0); border: none;">
+        <h6 style="color: rgba(255,255,255,.7); font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; margin-bottom:12px;">O que acontece após o upload?</h6>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.8rem;">1</div>
+          <div style="color:rgba(255,255,255,.9);font-size:.88rem;">O sistema extrai automaticamente os códigos e quantidades do PDF</div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.8rem;">2</div>
+          <div style="color:rgba(255,255,255,.9);font-size:.88rem;">Você revisa e corrige os itens identificados</div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.8rem;">3</div>
+          <div style="color:rgba(255,255,255,.9);font-size:.88rem;">O volume total é calculado automaticamente (Método A e B)</div>
+        </div>
+        <div class="d-flex gap-3">
+          <div style="width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.8rem;">4</div>
+          <div style="color:rgba(255,255,255,.9);font-size:.88rem;">Frete calculado e proposta gerada em PDF</div>
+        </div>
+      </div>
+
+      <div class="fa-card">
+        <div class="fa-card-title mb-3">Formatos suportados</div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-check-circle-fill text-success"></i>
+          <span style="font-size:.88rem;">PCD padrão Fast Ariam</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-check-circle-fill text-success"></i>
+          <span style="font-size:.88rem;">PDFs com layout tabular (código, descrição, qtd)</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-info-circle text-warning"></i>
+          <span style="font-size:.85rem; color:#6B7280;">PDFs escaneados podem requerer revisão manual</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const fileName = document.getElementById('fileName');
+const btnUpload = document.getElementById('btnUpload');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#00478D'; dropZone.style.background = '#EEF5FF'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#CBD5E0'; dropZone.style.background = '#F8FAFF'; });
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.style.borderColor = '#CBD5E0';
+  dropZone.style.background = '#F8FAFF';
+  if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+function setFile(f) {
+  if (!f.name.endsWith('.pdf')) { alert('Selecione um arquivo PDF!'); return; }
+  fileName.textContent = f.name;
+  fileInfo.classList.remove('d-none');
+  btnUpload.disabled = false;
+  dropZone.style.borderColor = '#00478D';
+
+  // Transferir para o input do form
+  const dt = new DataTransfer();
+  dt.items.add(f);
+  fileInput.files = dt.files;
+}
+
+function clearFile() {
+  fileInput.value = '';
+  fileInfo.classList.add('d-none');
+  btnUpload.disabled = true;
+  dropZone.style.borderColor = '#CBD5E0';
+}
+
+// Loading state on submit
+document.getElementById('formUpload').addEventListener('submit', () => {
+  btnUpload.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+  btnUpload.disabled = true;
+});
+</script>
+</body>
+</html>

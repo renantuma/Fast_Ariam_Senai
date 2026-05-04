@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Produtos — Fast Ariam</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="/css/main.css" rel="stylesheet"/>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: sidebar}"></div>
+<div id="topbar">
+  <span class="topbar-title">Catálogo de Produtos</span>
+  <button class="btn-fa btn" data-bs-toggle="modal" data-bs-target="#modalProduto" onclick="novoProduto()">
+    <i class="bi bi-plus-lg me-1"></i>Novo Produto
+  </button>
+</div>
+
+<main id="main">
+  <div th:if="${sucesso}" class="fa-alert alert alert-success mb-3">
+    <i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span>
+  </div>
+
+  <!-- Filtros -->
+  <form th:action="@{/admin/produtos}" method="get" class="fa-card mb-3">
+    <div class="d-flex gap-3 align-items-end flex-wrap">
+      <div>
+        <label class="form-label" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Tipo</label>
+        <select name="tipo" class="form-select form-select-sm" style="min-width:160px;">
+          <option value="">Todos</option>
+          <option th:each="t : ${tipos}" th:value="${t.name()}" th:text="${t.name().replace('_',' ')}"
+                  th:selected="${param.tipo != null and param.tipo[0] == t.name()}"></option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Buscar</label>
+        <input type="text" name="termo" class="form-control form-control-sm" placeholder="código, descrição..."
+               style="min-width:220px;" th:value="${param.termo}"/>
+      </div>
+      <button type="submit" class="btn-fa btn btn-sm px-4">Filtrar</button>
+      <a th:href="@{/admin/produtos}" class="btn btn-sm btn-outline-secondary rounded-pill">Limpar</a>
+    </div>
+  </form>
+
+  <div class="fa-card">
+    <div class="mb-2" style="font-size:.82rem;color:#6B7280;"
+         th:text="${produtos.size() + ' produto(s) encontrado(s)'}"></div>
+    <div class="table-responsive">
+      <table class="fa-table">
+        <thead>
+          <tr>
+            <th>Código</th><th>Descrição</th><th>Tipo</th><th>Categoria / Dimensões</th>
+            <th>Fator / Vol. Unit.</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="p : ${produtos}">
+            <td><code th:text="${p.codigo}"></code></td>
+            <td>
+              <div th:text="${p.descricao}"></div>
+              <div th:if="${p.nomeAntigo}" class="text-muted" style="font-size:.75rem;">
+                Antigo: <span th:text="${p.nomeAntigo}"></span>
+              </div>
+            </td>
+            <td>
+              <span th:if="${p.tipo.name() == 'REFRIGERADO'}" class="badge bg-info text-dark">Refrigerado</span>
+              <span th:if="${p.tipo.name() == 'LINHA_SECA'}" class="badge bg-success">Linha Seca</span>
+            </td>
+            <td style="font-size:.82rem;">
+              <span th:if="${p.tipo.name() == 'LINHA_SECA'}" th:text="${p.categoria?.descricao ?: '—'}"></span>
+              <span th:if="${p.tipo.name() == 'REFRIGERADO'}"
+                    th:text="${p.comprimento+'m × '+p.largura+'m × '+p.altura+'m'}"></span>
+            </td>
+            <td style="font-size:.88rem;">
+              <span th:if="${p.tipo.name() == 'LINHA_SECA'}" th:text="${p.fatorQtdM3 + ' pç/m³'}"></span>
+              <span th:if="${p.tipo.name() == 'REFRIGERADO'}"
+                    th:text="${#numbers.formatDecimal(p.volumeUnitario,1,3)+' m³'}"></span>
+            </td>
+            <td>
+              <span th:if="${p.ativo}" class="badge bg-success">Ativo</span>
+              <span th:unless="${p.ativo}" class="badge bg-secondary">Inativo</span>
+            </td>
+            <td class="d-flex gap-1">
+              <button class="btn btn-sm btn-outline-primary rounded-pill"
+                      th:onclick="'editarProduto('+${p.id}+',\''+${p.codigo}+'\',\''+${p.descricao}+'\',\''+${p.tipo.name()}+'\')'"
+                      data-bs-toggle="modal" data-bs-target="#modalProduto">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <form th:action="@{/admin/produtos/{id}/toggle(id=${p.id})}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-sm rounded-pill"
+                        th:classappend="${p.ativo} ? 'btn-outline-warning' : 'btn-outline-success'">
+                  <i th:classappend="${p.ativo} ? 'bi bi-pause' : 'bi bi-play'" class="bi"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Modal Produto -->
+<div class="modal fade" id="modalProduto" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="background:#00478D;color:#fff;border-radius:16px 16px 0 0;border:none;">
+        <h5 class="modal-title" id="modalTitulo">Novo Produto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form th:action="@{/admin/produtos/salvar}" method="post" class="fa-form">
+        <input type="hidden" name="id" id="prodId"/>
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Código *</label>
+              <input type="text" name="codigo" id="prodCodigo" class="form-control" required placeholder="LSG-GOND-01"/>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Descrição *</label>
+              <input type="text" name="descricao" id="prodDesc" class="form-control" required placeholder="Gondola 1,25m Dupla Face"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nome Antigo (mapeamento PDF)</label>
+              <input type="text" name="nomeAntigo" class="form-control" placeholder="Nome no PDF legado"/>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tipo *</label>
+              <select name="tipo" id="prodTipo" class="form-select" onchange="toggleCampos(this.value)" required>
+                <option value="">— selecionar —</option>
+                <option th:each="t : ${tipos}" th:value="${t.name()}" th:text="${t.name().replace('_',' ')}"></option>
+              </select>
+            </div>
+
+            <!-- Linha Seca -->
+            <div id="camposLinhaSeca" class="col-12 d-none">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Categoria</label>
+                  <select name="categoria" class="form-select">
+                    <option value="">— selecionar —</option>
+                    <option th:each="c : ${categorias}" th:value="${c.name()}"
+                            th:text="${c.descricao + ' (fator: ' + c.fatorAjuste + 'x)'}"></option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Fator Qtd/m³ *</label>
+                  <input type="number" name="fatorQtdM3" class="form-control" step="0.01" min="0.01" placeholder="Peças por m³"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Refrigerado -->
+            <div id="camposRefrigerado" class="col-12 d-none">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Comprimento (m) *</label>
+                  <input type="number" name="comprimento" class="form-control" step="0.01" placeholder="Ex: 1.56"/>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Largura (m) *</label>
+                  <input type="number" name="largura" class="form-control" step="0.01" placeholder="Ex: 1.20"/>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Altura (m) *</label>
+                  <input type="number" name="altura" class="form-control" step="0.01" placeholder="Ex: 1.72"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 px-4 pb-4">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-fa btn px-5">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function toggleCampos(tipo) {
+  document.getElementById('camposLinhaSeca').className = 'col-12 ' + (tipo === 'LINHA_SECA' ? '' : 'd-none');
+  document.getElementById('camposRefrigerado').className = 'col-12 ' + (tipo === 'REFRIGERADO' ? '' : 'd-none');
+}
+function novoProduto() {
+  document.getElementById('modalTitulo').textContent = 'Novo Produto';
+  document.getElementById('prodId').value = '';
+  document.getElementById('prodCodigo').value = '';
+  document.getElementById('prodDesc').value = '';
+  document.getElementById('prodTipo').value = '';
+  toggleCampos('');
+}
+function editarProduto(id, codigo, desc, tipo) {
+  document.getElementById('modalTitulo').textContent = 'Editar Produto';
+  document.getElementById('prodId').value = id;
+  document.getElementById('prodCodigo').value = codigo;
+  document.getElementById('prodDesc').value = desc;
+  document.getElementById('prodTipo').value = tipo;
+  toggleCampos(tipo);
+}
+</script>
+</body>
+</html>
