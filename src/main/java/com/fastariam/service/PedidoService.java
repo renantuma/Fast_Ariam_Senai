@@ -1,6 +1,4 @@
 package com.fastariam.service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fastariam.dto.ItemExtraidoDTO;
 import com.fastariam.dto.ResultadoFreteDTO;
@@ -17,12 +15,13 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
 public class PedidoService {
-    private static final Logger log = LoggerFactory.getLogger(PedidoService.class);
 
+    private static final Logger log = Logger.getLogger(PedidoService.class.getName());
 
     private final PedidoRepository pedidoRepo;
     private final ProdutoRepository produtoRepo;
@@ -39,23 +38,21 @@ public class PedidoService {
                           PropostaRepository propostaRepo, PdfExtratorService pdfExtrator,
                           VolumetriaService volumetriaService, FreteService freteService,
                           PropostaGeracaoService propostaGeracao) {
-        this.pedidoRepo = pedidoRepo; this.produtoRepo = produtoRepo;
-        this.cidadeRepo = cidadeRepo; this.clienteRepo = clienteRepo;
-        this.propostaRepo = propostaRepo; this.pdfExtrator = pdfExtrator;
-        this.volumetriaService = volumetriaService; this.freteService = freteService;
+        this.pedidoRepo = pedidoRepo;
+        this.produtoRepo = produtoRepo;
+        this.cidadeRepo = cidadeRepo;
+        this.clienteRepo = clienteRepo;
+        this.propostaRepo = propostaRepo;
+        this.pdfExtrator = pdfExtrator;
+        this.volumetriaService = volumetriaService;
+        this.freteService = freteService;
         this.propostaGeracao = propostaGeracao;
     }
 
-    /**
-     * RF-01/02: Upload e extração de PDF.
-     */
     public List<ItemExtraidoDTO> uploadPedidoPdf(MultipartFile arquivo, Usuario usuario) throws IOException {
         return pdfExtrator.extrair(arquivo);
     }
 
-    /**
-     * Cria um pedido a partir dos itens revisados pelo operador.
-     */
     public Pedido criarPedido(String numeroPedido, List<ItemExtraidoDTO> itensRevisados, Usuario usuario) {
         Pedido pedido = Pedido.builder()
                 .numeroPedido(numeroPedido)
@@ -85,7 +82,6 @@ public class PedidoService {
             pedido.getItens().add(item);
         }
 
-        // Calcular volumetria imediatamente
         ResultadoVolumetriaDTO vol = volumetriaService.calcular(pedido.getItens());
         pedido.setVolumeTotalM3(vol.getVolumeTotalM3());
         pedido.setMetrosCarroceria(vol.getMetrosCarroceria());
@@ -93,26 +89,21 @@ public class PedidoService {
         pedido.setMetrosComMargemVenda(vol.getMetrosComMargemVenda());
         pedido.setVeiculoSugerido(vol.getVeiculoSugerido());
 
-        // Atualizar volume por item
         atualizarVolumeItens(pedido.getItens(), vol);
 
         return pedidoRepo.save(pedido);
     }
 
-    /**
-     * Define destino e calcula frete.
-     */
     public ResultadoFreteDTO calcularFrete(Long pedidoId, String nomeCidade, String estado,
                                             Long clienteId, double valorMercadoria) {
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
 
-        Cidade cidade = cidadeRepo.findByNomeAndEstado(nomeCidade, estado)
-                .orElse(null);
+        Cidade cidade = cidadeRepo.findByNomeAndEstado(nomeCidade, estado).orElse(null);
         if (cidade != null) pedido.setCidadeDestino(cidade);
 
         double fatorDescarga = 1.0;
-        if (clienteId != null) {
+        if (clienteId != null && clienteId > 0) {
             Cliente cliente = clienteRepo.findById(clienteId).orElse(null);
             if (cliente != null) {
                 pedido.setCliente(cliente);
@@ -125,9 +116,6 @@ public class PedidoService {
         return freteService.calcular(nomeCidade, estado, valorMercadoria, fatorDescarga, pedido.getVolumeTotalM3());
     }
 
-    /**
-     * Gera a proposta comercial em PDF.
-     */
     public String gerarProposta(Long pedidoId, ResultadoFreteDTO frete, TipoVeiculo veiculoEscolhido,
                                  double ajusteManual, String justificativa, Usuario usuario) throws IOException {
 
@@ -152,7 +140,8 @@ public class PedidoService {
                 .totalFreteTruck(frete.getTotalTruck())
                 .totalFreteCarreta(frete.getTotalCarreta())
                 .veiculoEscolhido(veiculoEscolhido)
-                .freteTotal(veiculoEscolhido == TipoVeiculo.CARRETA ? frete.getTotalCarreta() : frete.getTotalTruck())
+                .freteTotal(veiculoEscolhido == TipoVeiculo.CARRETA
+                        ? frete.getTotalCarreta() : frete.getTotalTruck())
                 .ajusteManual(ajusteManual)
                 .justificativaAjuste(justificativa)
                 .geradaEm(LocalDateTime.now())
@@ -165,29 +154,48 @@ public class PedidoService {
         return propostaGeracao.gerarPdf(pedido, proposta);
     }
 
+    /**
+     * Exclui um pedido e todos os seus dados vinculados (proposta e itens).
+     */
+    public void excluir(Long id) {
+        Pedido pedido = pedidoRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
+
+        // 1. Deleta a proposta vinculada (se existir)
+        propostaRepo.findByPedidoId(id).ifPresent(propostaRepo::delete);
+        propostaRepo.flush();
+
+        // 2. Limpa os itens (orphanRemoval=true garante a deleção em cascata)
+        pedido.getItens().clear();
+        pedidoRepo.saveAndFlush(pedido);
+
+        // 3. Deleta o pedido
+        pedidoRepo.delete(pedido);
+        pedidoRepo.flush();
+
+        log.info("Pedido #" + id + " excluído com sucesso.");
+    }
+
     public Page<Pedido> listar(Pageable pageable) {
         return pedidoRepo.findAllByOrderByCriadoEmDesc(pageable);
     }
 
     public Pedido buscar(Long id) {
-        return pedidoRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
+        return pedidoRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + id));
     }
 
-    private void atualizarVolumeItens(List<ItemPedido> itens,
-                                       ResultadoVolumetriaDTO vol) {
-        // Mapear volume por código
+    private void atualizarVolumeItens(List<ItemPedido> itens, ResultadoVolumetriaDTO vol) {
         for (ItemPedido item : itens) {
             if (item.getProduto() == null) continue;
             String cod = item.getProduto().getCodigo();
 
             vol.getItensRefrigerado().stream()
-                    .filter(i -> cod.equals(i.getCodigo()))
-                    .findFirst()
+                    .filter(i -> cod.equals(i.getCodigo())).findFirst()
                     .ifPresent(i -> item.setVolumeM3(i.getVolumeAjustado()));
 
             vol.getItensSeca().stream()
-                    .filter(i -> cod.equals(i.getCodigo()))
-                    .findFirst()
+                    .filter(i -> cod.equals(i.getCodigo())).findFirst()
                     .ifPresent(i -> item.setVolumeM3(i.getVolumeAjustado()));
         }
     }

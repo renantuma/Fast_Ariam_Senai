@@ -34,22 +34,27 @@ public class PedidoController {
     private final ProdutoRepository produtoRepo;
     private final ClienteRepository clienteRepo;
     private final CidadeRepository cidadeRepo;
+    private final PropostaRepository propostaRepo;
 
     public PedidoController(PedidoService pedidoService, VolumetriaService volumetriaService,
                              FreteService freteService, PedidoRepository pedidoRepo,
                              UsuarioRepository usuarioRepo, ProdutoRepository produtoRepo,
-                             ClienteRepository clienteRepo, CidadeRepository cidadeRepo) {
-        this.pedidoService = pedidoService; this.volumetriaService = volumetriaService;
-        this.freteService = freteService; this.pedidoRepo = pedidoRepo;
-        this.usuarioRepo = usuarioRepo; this.produtoRepo = produtoRepo;
-        this.clienteRepo = clienteRepo; this.cidadeRepo = cidadeRepo;
+                             ClienteRepository clienteRepo, CidadeRepository cidadeRepo,
+                             PropostaRepository propostaRepo) {
+        this.pedidoService = pedidoService;
+        this.volumetriaService = volumetriaService;
+        this.freteService = freteService;
+        this.pedidoRepo = pedidoRepo;
+        this.usuarioRepo = usuarioRepo;
+        this.produtoRepo = produtoRepo;
+        this.clienteRepo = clienteRepo;
+        this.cidadeRepo = cidadeRepo;
+        this.propostaRepo = propostaRepo;
     }
 
     @GetMapping
-    public String listar(Model model,
-                         @RequestParam(defaultValue = "0") int page) {
-        model.addAttribute("pedidos",
-                pedidoService.listar(PageRequest.of(page, 15)));
+    public String listar(Model model, @RequestParam(defaultValue = "0") int page) {
+        model.addAttribute("pedidos", pedidoService.listar(PageRequest.of(page, 15)));
         return "pedidos/lista";
     }
 
@@ -58,7 +63,6 @@ public class PedidoController {
         return "pedidos/novo";
     }
 
-    // Passo 1: Upload PDF
     @PostMapping("/upload-pdf")
     public String uploadPdf(@RequestParam("arquivo") MultipartFile arquivo,
                              @AuthenticationPrincipal UserDetails ud,
@@ -79,7 +83,6 @@ public class PedidoController {
         return "pedidos/revisar-itens";
     }
 
-    // Passo 2: Confirmar itens e calcular volumetria
     @PostMapping("/calcular-volumetria")
     public String calcularVolumetria(@RequestParam String numeroPedido,
                                       @RequestParam List<String> codigos,
@@ -91,7 +94,6 @@ public class PedidoController {
 
         Usuario usuario = usuarioRepo.findByUsername(ud.getUsername()).orElseThrow();
 
-        // Montar lista de itens revisados
         List<ItemExtraidoDTO> itens = new java.util.ArrayList<>();
         for (int i = 0; i < codigos.size(); i++) {
             Long pid = produtoIds.get(i);
@@ -145,7 +147,6 @@ public class PedidoController {
                                  @RequestParam String veiculoEscolhido,
                                  @RequestParam(defaultValue = "0") double ajusteManual,
                                  @RequestParam(required = false) String justificativa,
-                                 // Parâmetros do frete recalculados (hidden fields)
                                  @RequestParam String nomeCidade,
                                  @RequestParam String estado,
                                  @RequestParam(defaultValue = "0") Long clienteId,
@@ -181,14 +182,13 @@ public class PedidoController {
 
     @GetMapping("/{id}/download-proposta")
     public ResponseEntity<Resource> downloadProposta(@PathVariable Long id) {
-        Pedido pedido = pedidoService.buscar(id);
-        // Localiza o arquivo
+        pedidoService.buscar(id); // valida existência
         File dir = new File("./uploads/propostas");
         File[] arquivos = dir.listFiles((d, name) -> name.startsWith("Proposta_" + id + "_"));
         if (arquivos == null || arquivos.length == 0) {
             return ResponseEntity.notFound().build();
         }
-        File arquivo = arquivos[arquivos.length - 1]; // mais recente
+        File arquivo = arquivos[arquivos.length - 1];
         Resource resource = new FileSystemResource(arquivo);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
@@ -196,6 +196,25 @@ public class PedidoController {
                         "attachment; filename=\"" + arquivo.getName() + "\"")
                 .body(resource);
     }
+
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(PedidoController.class.getName());
+
+    @PostMapping("/{id}/excluir")
+    public String excluirViaPost(@PathVariable Long id, RedirectAttributes ra) {
+        try {
+            pedidoService.excluir(id);
+            ra.addFlashAttribute("sucesso", "Pedido #" + id + " excluído com sucesso.");
+            log.info("Pedido " + id + " excluído com sucesso.");
+        } catch (IllegalArgumentException e) {
+            log.warning("Tentativa de excluir pedido inexistente: " + id);
+            ra.addFlashAttribute("erro", "Pedido #" + id + " não encontrado.");
+        } catch (Exception e) {
+            log.severe("Erro ao excluir pedido " + id + ": " + e.getMessage());
+            ra.addFlashAttribute("erro", "Não foi possível excluir o pedido #" + id + ". " + e.getMessage());
+        }
+        return "redirect:/pedidos";
+    }
+
 
     @GetMapping("/{id}")
     public String detalhe(@PathVariable Long id, Model model) {
