@@ -1,36 +1,36 @@
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\config\DataInitializer.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\config\SecurityConfig.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\AdminController.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\ApiController.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\DashboardController.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\PedidoController.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ItemExtraidoDTO.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoFreteDTO.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoVolumetriaDTO.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\FastAriamApplication.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\CategoriaLinhaSeca.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Cidade.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Cliente.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\ConfiguracaoFrete.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\ItemPedido.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Pedido.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\PerfilUsuario.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Produto.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Proposta.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\StatusPedido.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoProduto.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoVeiculo.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Usuario.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\CidadeRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ClienteRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ConfiguracaoFreteRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PedidoRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ProdutoRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PropostaRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\UsuarioRepository.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\FreteService.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PdfExtratorService.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PedidoService.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PropostaGeracaoService.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\RoteirizacaoService.java
-C:\Users\renan\OneDrive\Área de Trabalho\Teste-FAS\Fast_Ariam_Senai\src\main\java\com\fastariam\service\VolumetriaService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\config\DataInitializer.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\config\SecurityConfig.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\AdminController.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\ApiController.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\DashboardController.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\PedidoController.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ItemExtraidoDTO.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoFreteDTO.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoVolumetriaDTO.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\FastAriamApplication.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\CategoriaLinhaSeca.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Cidade.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Cliente.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\ConfiguracaoFrete.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\ItemPedido.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Pedido.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\PerfilUsuario.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Produto.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Proposta.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\StatusPedido.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoProduto.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoVeiculo.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Usuario.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\CidadeRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ClienteRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ConfiguracaoFreteRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PedidoRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ProdutoRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PropostaRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\UsuarioRepository.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\FreteService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PdfExtratorService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PedidoService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PropostaGeracaoService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\RoteirizacaoService.java
+C:\Users\Aluno\Desktop\Projeto\Fast_Ariam_Senai\src\main\java\com\fastariam\service\VolumetriaService.java
