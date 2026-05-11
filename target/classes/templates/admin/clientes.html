@@ -28,7 +28,7 @@
       <div class="fa-card" style="border-left: 4px solid #059669;">
         <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 1,0x (Padrão)</div>
         <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
-             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 1.0).count()}">0</div>
+             th:text="${countPadrao}">0</div>
         <div style="font-size:.8rem;color:#6B7280;">Clientes com descarga normal</div>
       </div>
     </div>
@@ -36,7 +36,7 @@
       <div class="fa-card" style="border-left: 4px solid #EB5E28;">
         <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 1,5x (Especial)</div>
         <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
-             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 1.5).count()}">0</div>
+             th:text="${countEspecial}">0</div>
         <div style="font-size:.8rem;color:#6B7280;">Custo de descarga 50% maior</div>
       </div>
     </div>
@@ -44,7 +44,7 @@
       <div class="fa-card" style="border-left: 4px solid #DC2626;">
         <div style="font-size:.75rem;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;">Fator 2,0x (Duplo)</div>
         <div style="font-family:'Space Grotesk',sans-serif;font-size:1.5rem;font-weight:700;margin:4px 0;"
-             th:text="${clientes.stream().filter(c -> c.fatorDescarga == 2.0).count()}">0</div>
+             th:text="${countDuplo}">0</div>
         <div style="font-size:.8rem;color:#6B7280;">Custo de descarga dobrado</div>
       </div>
     </div>
@@ -80,10 +80,13 @@
           </td>
           <td>
             <button class="btn btn-sm btn-outline-primary rounded-pill"
-                    data-bs-toggle="modal" data-bs-target="#modalCliente"
-                    th:onclick="'editarCliente('+${c.id}+',\''+${c.nome}+'\','+${c.fatorDescarga}+')'">
-              <i class="bi bi-pencil"></i>
-            </button>
+        data-bs-toggle="modal" data-bs-target="#modalCliente"
+        th:data-id="${c.id}"
+        th:data-nome="${c.nome}"
+        th:data-fator="${c.fatorDescarga}"
+        onclick="editarCliente(this)">
+  <i class="bi bi-pencil"></i>
+</button>
           </td>
         </tr>
       </tbody>
@@ -136,11 +139,11 @@ function novoCliente() {
   document.getElementById('clienteNome').value = '';
   document.getElementById('clienteFator').value = '1.0';
 }
-function editarCliente(id, nome, fator) {
+function editarCliente(btn) {
   document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
-  document.getElementById('clienteId').value = id;
-  document.getElementById('clienteNome').value = nome;
-  document.getElementById('clienteFator').value = String(fator);
+  document.getElementById('clienteId').value = btn.dataset.id;
+  document.getElementById('clienteNome').value = btn.dataset.nome;
+  document.getElementById('clienteFator').value = btn.dataset.fator;
 }
 </script>
 </body>

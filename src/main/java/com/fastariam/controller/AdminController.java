@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -180,7 +182,16 @@ public class AdminController {
     // ---- Clientes ----
     @GetMapping("/clientes")
     public String clientes(Model model) {
-        model.addAttribute("clientes", clienteRepo.findByAtivoTrueOrderByNome());
+        List<Cliente> clientes = clienteRepo.findByAtivoTrueOrderByNome();
+
+        model.addAttribute("clientes", clientes);
+        model.addAttribute("countPadrao", clientes.stream()
+            .filter(c -> c.getFatorDescarga() == 1.0).count());
+        model.addAttribute("countEspecial", clientes.stream()
+            .filter(c -> c.getFatorDescarga() == 1.5).count());
+        model.addAttribute("countDuplo", clientes.stream()
+            .filter(c -> c.getFatorDescarga() == 2.0).count());
+
         return "admin/clientes";
     }
 
