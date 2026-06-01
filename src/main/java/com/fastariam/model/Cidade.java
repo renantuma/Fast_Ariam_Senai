@@ -1,9 +1,21 @@
 package com.fastariam.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
+/**
+ * Representa uma cidade brasileira com seus dados geográficos.
+ * Dados comerciais de frete ficam em TabelaFrete.
+ */
 @Entity
-@Table(name = "cidades")
+@Table(name = "cidades", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"nome", "estado"})
+})
 public class Cidade {
 
     @Id
@@ -16,62 +28,69 @@ public class Cidade {
     @Column(nullable = false, length = 2)
     private String estado;
 
-    private double icmsPercent;
-    private double distanciaKm;
-    private double pedagioTruck;
-    private double pedagioCarreta;
-    private double freteBaseKmTruck;
-    private double freteBaseKmCarreta;
-    private boolean viaApi;
+    /** Região geográfica (ex: Sudeste, Sul, Norte) */
+    @Column(length = 50)
+    private String regiao;
+
+    /** Distância em km a partir de Londrina-PR (origem padrão de expedição) */
+    private double distanciaKmOrigem;
+
+    /** Latitude para integração com APIs de roteirização */
+    private Double latitude;
+
+    /** Longitude para integração com APIs de roteirização */
+    private Double longitude;
+
+    /** Indica se a distância foi obtida via API ou cadastro manual */
+    private boolean distanciaViaApi;
 
     public Cidade() {}
 
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {
-        private String nome, estado;
-        private double icmsPercent, distanciaKm, pedagioTruck, pedagioCarreta;
-        private double freteBaseKmTruck, freteBaseKmCarreta;
-        private boolean viaApi;
+        private String nome, estado, regiao;
+        private double distanciaKmOrigem;
+        private Double latitude, longitude;
+        private boolean distanciaViaApi;
 
-        public Builder nome(String v) { this.nome = v; return this; }
-        public Builder estado(String v) { this.estado = v; return this; }
-        public Builder icmsPercent(double v) { this.icmsPercent = v; return this; }
-        public Builder distanciaKm(double v) { this.distanciaKm = v; return this; }
-        public Builder pedagioTruck(double v) { this.pedagioTruck = v; return this; }
-        public Builder pedagioCarreta(double v) { this.pedagioCarreta = v; return this; }
-        public Builder freteBaseKmTruck(double v) { this.freteBaseKmTruck = v; return this; }
-        public Builder freteBaseKmCarreta(double v) { this.freteBaseKmCarreta = v; return this; }
-        public Builder viaApi(boolean v) { this.viaApi = v; return this; }
+        public Builder nome(String v)              { this.nome = v; return this; }
+        public Builder estado(String v)            { this.estado = v; return this; }
+        public Builder regiao(String v)            { this.regiao = v; return this; }
+        public Builder distanciaKmOrigem(double v) { this.distanciaKmOrigem = v; return this; }
+        public Builder latitude(Double v)          { this.latitude = v; return this; }
+        public Builder longitude(Double v)         { this.longitude = v; return this; }
+        public Builder distanciaViaApi(boolean v)  { this.distanciaViaApi = v; return this; }
 
         public Cidade build() {
             Cidade c = new Cidade();
-            c.nome = nome; c.estado = estado; c.icmsPercent = icmsPercent;
-            c.distanciaKm = distanciaKm; c.pedagioTruck = pedagioTruck;
-            c.pedagioCarreta = pedagioCarreta; c.freteBaseKmTruck = freteBaseKmTruck;
-            c.freteBaseKmCarreta = freteBaseKmCarreta; c.viaApi = viaApi;
+            c.nome = nome;
+            c.estado = estado;
+            c.regiao = regiao;
+            c.distanciaKmOrigem = distanciaKmOrigem;
+            c.latitude = latitude;
+            c.longitude = longitude;
+            c.distanciaViaApi = distanciaViaApi;
             return c;
         }
     }
 
-    public Long getId() { return id; }
-    public String getNome() { return nome; }
-    public void setNome(String v) { this.nome = v; }
-    public String getEstado() { return estado; }
-    public void setEstado(String v) { this.estado = v; }
-    public double getIcmsPercent() { return icmsPercent; }
-    public void setIcmsPercent(double v) { this.icmsPercent = v; }
-    public double getDistanciaKm() { return distanciaKm; }
-    public void setDistanciaKm(double v) { this.distanciaKm = v; }
-    public double getPedagioTruck() { return pedagioTruck; }
-    public void setPedagioTruck(double v) { this.pedagioTruck = v; }
-    public double getPedagioCarreta() { return pedagioCarreta; }
-    public void setPedagioCarreta(double v) { this.pedagioCarreta = v; }
-    public double getFreteBaseKmTruck() { return freteBaseKmTruck; }
-    public void setFreteBaseKmTruck(double v) { this.freteBaseKmTruck = v; }
-    public double getFreteBaseKmCarreta() { return freteBaseKmCarreta; }
-    public void setFreteBaseKmCarreta(double v) { this.freteBaseKmCarreta = v; }
-    public boolean isViaApi() { return viaApi; }
-    public void setViaApi(boolean v) { this.viaApi = v; }
-    public boolean isCadastrada() { return distanciaKm > 0; }
+    public Long getId()                       { return id; }
+    public String getNome()                   { return nome; }
+    public void setNome(String v)             { this.nome = v; }
+    public String getEstado()                 { return estado; }
+    public void setEstado(String v)           { this.estado = v; }
+    public String getRegiao()                 { return regiao; }
+    public void setRegiao(String v)           { this.regiao = v; }
+    public double getDistanciaKmOrigem()      { return distanciaKmOrigem; }
+    public void setDistanciaKmOrigem(double v){ this.distanciaKmOrigem = v; }
+    public Double getLatitude()               { return latitude; }
+    public void setLatitude(Double v)         { this.latitude = v; }
+    public Double getLongitude()              { return longitude; }
+    public void setLongitude(Double v)        { this.longitude = v; }
+    public boolean isDistanciaViaApi()        { return distanciaViaApi; }
+    public void setDistanciaViaApi(boolean v) { this.distanciaViaApi = v; }
+
+    @Override
+    public String toString() { return nome + "/" + estado; }
 }
