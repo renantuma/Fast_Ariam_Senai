@@ -44,14 +44,10 @@
           </td>
           <td class="d-flex gap-2">
             <button class="btn btn-sm btn-outline-primary rounded-pill"
-                  data-bs-toggle="modal" data-bs-target="#modalUsuario"
-                  th:data-id="${u.id}"
-                  th:data-username="${u.username}"
-                  th:data-nome="${u.nome}"
-                  th:data-perfil="${u.perfil}"
-                  onclick="editarUsuario(this)">
-            <i class="bi bi-pencil"></i>
-          </button>
+                    data-bs-toggle="modal" data-bs-target="#modalUsuario"
+                    th:onclick="'editarUsuario('+${u.id}+',\''+${u.username}+'\',\''+${u.nome}+'\',\''+${u.perfil}+'\')'">
+              <i class="bi bi-pencil"></i>
+            </button>
             <form th:action="@{/admin/usuarios/{id}/toggle(id=${u.id})}" method="post" class="d-inline">
               <button type="submit" class="btn btn-sm rounded-pill"
                       th:classappend="${u.ativo} ? 'btn-outline-warning' : 'btn-outline-success'"
@@ -110,12 +106,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function editarUsuario(btn) {
+function novoUsuario() {
+  document.getElementById('modalUsuarioTitulo').textContent = 'Novo Usuário';
+  document.getElementById('usuarioId').value = '';
+  document.getElementById('usuarioUsername').value = '';
+  document.getElementById('usuarioNome').value = '';
+  document.getElementById('usuarioPerfil').value = 'OPERADOR';
+  document.getElementById('usuarioSenha').value = '';
+  document.getElementById('senhaHint').textContent = '(obrigatória para novo usuário)';
+}
+function editarUsuario(id, username, nome, perfil) {
   document.getElementById('modalUsuarioTitulo').textContent = 'Editar Usuário';
-  document.getElementById('usuarioId').value = btn.dataset.id;
-  document.getElementById('usuarioUsername').value = btn.dataset.username;
-  document.getElementById('usuarioNome').value = btn.dataset.nome;
-  document.getElementById('usuarioPerfil').value = btn.dataset.perfil;
+  document.getElementById('usuarioId').value = id;
+  document.getElementById('usuarioUsername').value = username;
+  document.getElementById('usuarioNome').value = nome;
+  document.getElementById('usuarioPerfil').value = perfil;
   document.getElementById('usuarioSenha').value = '';
   document.getElementById('senhaHint').textContent = '(deixe em branco para manter)';
 }

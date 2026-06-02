@@ -208,11 +208,9 @@
         <div style="font-size:.68rem;color:rgba(255,255,255,.45);" sec:authorize="hasRole('OPERADOR')">Operador</div>
       </div>
     </div>
-    <form th:action="@{/logout}" method="post">
-      <button type="submit" class="btn-logout">
-        <i class="bi bi-box-arrow-right"></i> Sair
-      </button>
-    </form>
+    <a th:href="@{/logout}" class="sidebar-link" style="margin:0;padding:7px 12px;">
+      <i class="bi bi-box-arrow-left"></i> Sair
+    </a>
   </div>
 </nav>
 
