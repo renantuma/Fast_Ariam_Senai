@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Revisar Itens — Fast Ariam</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="/css/main.css" rel="stylesheet"/>
+<head th:replace="~{fragments/layout :: head}">
+  <title>Fast Ariam</title>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div id="topbar">
-  <span class="topbar-title"><i class="bi bi-pencil-square me-2 text-muted"></i>Revisar Itens do Pedido</span>
-</div>
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<header id="topbar">
+  <div class="d-flex align-items-center gap-2" style="min-width:0;">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <span class="topbar-title text-truncate"><i class="bi bi-pencil-square me-2 text-muted" aria-hidden="true"></i>Revisar Itens do Pedido</span>
+  </div>
+</header>
 
 <main id="main">
   <div class="step-bar mb-4">
@@ -129,8 +130,6 @@
     </div>
   </form>
 </main>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 function updateCount() {
   const rows = document.querySelectorAll('#tbodyItens .item-row');
@@ -182,5 +181,6 @@ function bindSelects() {
 bindSelects();
 updateCount();
 </script>
+<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

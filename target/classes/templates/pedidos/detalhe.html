@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title th:text="'Pedido #'+${pedido.id}+' — Fast Ariam'">Pedido — Fast Ariam</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="/css/main.css" rel="stylesheet"/>
+<head th:replace="~{fragments/layout :: head}">
+  <title>Fast Ariam</title>
 </head>
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div id="topbar">
-  <span class="topbar-title">
-    <a th:href="@{/pedidos}" class="text-muted text-decoration-none">Pedidos</a>
-    <i class="bi bi-chevron-right mx-2 text-muted" style="font-size:.75rem;"></i>
-    Pedido #<span th:text="${pedido.id}"></span>
-  </span>
-  <div class="d-flex gap-2">
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<header id="topbar">
+  <div class="d-flex align-items-center gap-2" style="min-width:0;">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <span class="topbar-title text-truncate">
+      <a th:href="@{/pedidos}" class="text-muted text-decoration-none">Pedidos</a>
+      <i class="bi bi-chevron-right mx-1 text-muted" style="font-size:.75rem;" aria-hidden="true"></i>
+      Pedido #<span th:text="${pedido.id}"></span>
+    </span>
+  </div>
+  <div class="topbar-actions">
     <a th:if="${pedido.status.name() == 'PROPOSTA_GERADA'}"
        th:href="@{/pedidos/{id}/download-proposta(id=${pedido.id})}"
-       class="btn-fa btn d-inline-flex align-items-center gap-2">
-      <i class="bi bi-download"></i> Baixar Proposta
+       class="btn-fa">
+      <i class="bi bi-download" aria-hidden="true"></i>
+      <span class="btn-label">Baixar Proposta</span>
     </a>
     <a th:unless="${pedido.status.name() == 'PROPOSTA_GERADA' or pedido.status.name() == 'FINALIZADO'}"
        th:href="@{/pedidos/{id}/frete(id=${pedido.id})}"
-       class="btn-fa-orange btn d-inline-flex align-items-center gap-2">
-      <i class="bi bi-arrow-right-circle"></i> Continuar
+       class="btn-fa-orange">
+      <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
+      <span class="btn-label">Continuar</span>
     </a>
   </div>
-</div>
+</header>
 
 <main id="main">
   <div class="row g-4">
@@ -159,6 +162,6 @@
     </div>
   </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

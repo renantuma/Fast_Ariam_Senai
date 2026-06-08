@@ -1,221 +1,168 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
+<head th:fragment="head">
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title th:text="${titulo != null ? titulo + ' — Fast Ariam' : 'Fast Ariam Logística'}">Fast Ariam</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <style>
-    :root {
-      --fa-blue: #00478D;
-      --fa-blue-dark: #003166;
-      --fa-orange: #EB5E28;
-      --fa-orange-light: #FF7A47;
-      --fa-bg: #F4F6FA;
-      --fa-surface: #FFFFFF;
-      --fa-border: #E2E6EF;
-      --fa-text: #1A1D2E;
-      --fa-muted: #6B7280;
-      --sidebar-w: 240px;
-    }
-    body { font-family: 'DM Sans', sans-serif; background: var(--fa-bg); color: var(--fa-text); }
-    h1,h2,h3,h4,h5,.fw-display { font-family: 'Space Grotesk', sans-serif; }
-
-    /* Sidebar */
-    #sidebar {
-      width: var(--sidebar-w); min-height: 100vh; background: var(--fa-blue-dark);
-      position: fixed; top: 0; left: 0; z-index: 100;
-      display: flex; flex-direction: column;
-      transition: transform .25s ease;
-    }
-    .sidebar-brand {
-      padding: 22px 20px 16px;
-      border-bottom: 1px solid rgba(255,255,255,.1);
-    }
-    .sidebar-brand .brand-name {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.25rem; font-weight: 700; color: #fff; letter-spacing: -.02em;
-    }
-    .sidebar-brand .brand-sub { font-size: .7rem; color: rgba(255,255,255,.5); margin-top: 2px; }
-
-    .sidebar-section { padding: 12px 12px 4px; font-size: .65rem; font-weight: 600;
-      color: rgba(255,255,255,.35); letter-spacing: .08em; text-transform: uppercase; }
-
-    .sidebar-link {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 16px; margin: 1px 8px; border-radius: 8px;
-      color: rgba(255,255,255,.75); text-decoration: none; font-size: .88rem; font-weight: 500;
-      transition: background .15s, color .15s;
-    }
-    .sidebar-link:hover, .sidebar-link.active {
-      background: rgba(255,255,255,.12); color: #fff;
-    }
-    .sidebar-link.active { background: var(--fa-orange); color: #fff; }
-    .sidebar-link i { font-size: 1rem; width: 18px; text-align: center; }
-
-    /* Top bar */
-    #topbar {
-      margin-left: var(--sidebar-w); background: var(--fa-surface);
-      border-bottom: 1px solid var(--fa-border);
-      padding: 0 28px; height: 58px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
-    }
-    .topbar-title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; color: var(--fa-text); }
-
-    /* Main content */
-    #main { margin-left: var(--sidebar-w); padding: 28px 32px; min-height: calc(100vh - 58px); }
-
-    /* Cards */
-    .fa-card { background: var(--fa-surface); border: 1px solid var(--fa-border); border-radius: 12px; padding: 20px 24px; }
-    .fa-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-    .fa-card-title { font-family: 'Space Grotesk', sans-serif; font-size: .95rem; font-weight: 600; color: var(--fa-text); }
-
-    /* KPI cards */
-    .kpi-card { border-radius: 14px; padding: 20px 22px; border: none; }
-    .kpi-card .kpi-label { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin-bottom: 6px; }
-    .kpi-card .kpi-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; line-height: 1; }
-    .kpi-card .kpi-icon { font-size: 1.6rem; opacity: .35; }
-
-    /* Buttons */
-    .btn-fa { background: var(--fa-blue); color: #fff; border: none; border-radius: 8px;
-      padding: 9px 20px; font-weight: 600; font-size: .88rem; transition: background .15s; }
-    .btn-fa:hover { background: var(--fa-blue-dark); color: #fff; }
-    .btn-fa-orange { background: var(--fa-orange); color: #fff; border: none; border-radius: 8px;
-      padding: 9px 20px; font-weight: 600; font-size: .88rem; transition: background .15s; }
-    .btn-fa-orange:hover { background: var(--fa-orange-light); color: #fff; }
-    .btn-outline-fa { border: 1.5px solid var(--fa-blue); color: var(--fa-blue); border-radius: 8px;
-      padding: 8px 18px; font-weight: 600; font-size: .88rem; background: transparent; transition: all .15s; }
-    .btn-outline-fa:hover { background: var(--fa-blue); color: #fff; }
-
-    /* Tables */
-    .fa-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .88rem; }
-    .fa-table thead th { background: var(--fa-bg); color: var(--fa-muted); font-size: .72rem;
-      font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 10px 14px;
-      border-bottom: 1px solid var(--fa-border); }
-    .fa-table tbody tr { transition: background .1s; }
-    .fa-table tbody tr:hover { background: #F8F9FD; }
-    .fa-table tbody td { padding: 12px 14px; border-bottom: 1px solid var(--fa-border); vertical-align: middle; }
-
-    /* Steps */
-    .step-bar { display: flex; gap: 0; margin-bottom: 28px; }
-    .step-item { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-    .step-item:not(:last-child)::after {
-      content: ''; position: absolute; top: 15px; left: 50%; width: 100%;
-      height: 2px; background: var(--fa-border); z-index: 0;
-    }
-    .step-item.done::after { background: var(--fa-blue); }
-    .step-num {
-      width: 32px; height: 32px; border-radius: 50%; background: var(--fa-border);
-      color: var(--fa-muted); font-weight: 700; font-size: .85rem;
-      display: flex; align-items: center; justify-content: center; position: relative; z-index: 1;
-    }
-    .step-item.active .step-num { background: var(--fa-blue); color: #fff; }
-    .step-item.done .step-num { background: var(--fa-blue); color: #fff; }
-    .step-label { font-size: .72rem; color: var(--fa-muted); margin-top: 5px; font-weight: 500; }
-    .step-item.active .step-label { color: var(--fa-blue); font-weight: 600; }
-
-    /* Badges */
-    .badge-status { border-radius: 6px; padding: 4px 10px; font-size: .72rem; font-weight: 600; }
-    .badge-rascunho { background: #F3F4F6; color: #6B7280; }
-    .badge-em_calculo { background: #EEF2FF; color: #4F46E5; }
-    .badge-proposta_gerada { background: #ECFDF5; color: #059669; }
-    .badge-finalizado { background: #D1FAE5; color: #047857; }
-    .badge-cancelado { background: #FEF2F2; color: #DC2626; }
-
-    /* Form */
-    .fa-form .form-label { font-size: .8rem; font-weight: 600; color: var(--fa-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
-    .fa-form .form-control, .fa-form .form-select {
-      border: 1.5px solid var(--fa-border); border-radius: 8px; font-size: .9rem;
-      padding: 9px 14px; transition: border-color .15s, box-shadow .15s;
-    }
-    .fa-form .form-control:focus, .fa-form .form-select:focus {
-      border-color: var(--fa-blue); box-shadow: 0 0 0 3px rgba(0,71,141,.12);
-    }
-
-    /* Alerts */
-    .fa-alert { border-radius: 10px; padding: 12px 16px; font-size: .88rem; border: none; }
-
-    /* Volume box */
-    .vol-box { background: linear-gradient(135deg, var(--fa-blue) 0%, #0060C0 100%);
-      border-radius: 14px; padding: 20px 24px; color: #fff; }
-    .vol-box .vol-num { font-family: 'Space Grotesk', sans-serif; font-size: 2.4rem; font-weight: 700; line-height: 1; }
-    .vol-box .vol-label { font-size: .78rem; opacity: .75; margin-top: 4px; }
-
-    /* Frete comparison */
-    .frete-card { border-radius: 12px; border: 2px solid var(--fa-border); padding: 18px 20px; cursor: pointer; transition: all .2s; }
-    .frete-card:hover { border-color: var(--fa-blue); box-shadow: 0 0 0 3px rgba(0,71,141,.08); }
-    .frete-card.selected { border-color: var(--fa-orange); background: #FFF8F5; }
-    .frete-card .frete-tipo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; }
-    .frete-card .frete-total { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--fa-orange); }
-  </style>
+  <link th:href="@{/css/main.css}" rel="stylesheet"/>
   <th:block th:fragment="extraHead"></th:block>
 </head>
 <body>
 
-<!-- Sidebar -->
-<nav id="sidebar" th:fragment="sidebar">
+<!-- ═══════════════════════════════════════════════════════
+     SIDEBAR (fragmento)
+     ═══════════════════════════════════════════════════════ -->
+<nav id="sidebar" aria-label="Menu principal" th:fragment="sidebar">
+
   <div class="sidebar-brand">
-    <div class="brand-name"><i class="bi bi-truck me-2"></i>Fast Ariam</div>
+    <div class="brand-icon" aria-hidden="true">
+      <i class="bi bi-truck-front-fill"></i>
+    </div>
+    <div class="brand-name">Fast Ariam</div>
     <div class="brand-sub">Sistema de Logística</div>
   </div>
 
-  <div class="mt-2">
+  <nav class="sidebar-nav">
     <div class="sidebar-section">Principal</div>
-    <a th:href="@{/dashboard}" class="sidebar-link" th:classappend="${activePage == 'dashboard'} ? 'active'">
-      <i class="bi bi-grid-1x2-fill"></i> Dashboard
+
+    <a th:href="@{/dashboard}"    class="sidebar-link" th:classappend="${activePage == 'dashboard'}   ? ' active'">
+      <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span>Dashboard</span>
     </a>
-    <a th:href="@{/pedidos/novo}" class="sidebar-link" th:classappend="${activePage == 'novo-pedido'} ? 'active'">
-      <i class="bi bi-plus-circle-fill"></i> Novo Pedido
+    <a th:href="@{/pedidos/novo}" class="sidebar-link" th:classappend="${activePage == 'novo-pedido'} ? ' active'">
+      <i class="bi bi-plus-circle-fill" aria-hidden="true"></i><span>Novo Pedido</span>
     </a>
-    <a th:href="@{/pedidos}" class="sidebar-link" th:classappend="${activePage == 'pedidos'} ? 'active'">
-      <i class="bi bi-file-earmark-text-fill"></i> Pedidos
+    <a th:href="@{/pedidos}"      class="sidebar-link" th:classappend="${activePage == 'pedidos'}     ? ' active'">
+      <i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i><span>Pedidos</span>
     </a>
 
-    <div class="sidebar-section mt-2">Cadastros</div>
-    <a th:href="@{/admin/produtos}" class="sidebar-link" th:classappend="${activePage == 'produtos'} ? 'active'">
-      <i class="bi bi-box-seam-fill"></i> Produtos
+    <div class="sidebar-section">Cadastros</div>
+
+    <a th:href="@{/admin/produtos}" class="sidebar-link" th:classappend="${activePage == 'produtos'} ? ' active'">
+      <i class="bi bi-box-seam-fill" aria-hidden="true"></i><span>Produtos</span>
     </a>
-    <a th:href="@{/admin/clientes}" class="sidebar-link" th:classappend="${activePage == 'clientes'} ? 'active'">
-      <i class="bi bi-people-fill"></i> Clientes
+    <a th:href="@{/admin/clientes}" class="sidebar-link" th:classappend="${activePage == 'clientes'} ? ' active'">
+      <i class="bi bi-people-fill" aria-hidden="true"></i><span>Clientes</span>
     </a>
-    <a th:href="@{/admin/cidades}" class="sidebar-link" th:classappend="${activePage == 'cidades'} ? 'active'">
-      <i class="bi bi-geo-alt-fill"></i> Cidades
+    <a th:href="@{/admin/cidades}"  class="sidebar-link" th:classappend="${activePage == 'cidades'}  ? ' active'">
+      <i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span>Cidades</span>
     </a>
 
-    <div class="sidebar-section mt-2" sec:authorize="hasRole('ADMINISTRADOR')">Admin</div>
-    <a th:href="@{/admin/configuracao}" class="sidebar-link" sec:authorize="hasRole('ADMINISTRADOR')"
-       th:classappend="${activePage == 'config'} ? 'active'">
-      <i class="bi bi-sliders2-vertical"></i> Configuração
-    </a>
-    <a th:href="@{/admin/usuarios}" class="sidebar-link" sec:authorize="hasRole('ADMINISTRADOR')"
-       th:classappend="${activePage == 'usuarios'} ? 'active'">
-      <i class="bi bi-person-gear"></i> Usuários
-    </a>
-  </div>
+    <div class="sidebar-section" sec:authorize="hasRole('ADMINISTRADOR')">Admin</div>
 
-  <div class="mt-auto p-3 border-top" style="border-color: rgba(255,255,255,.1) !important;">
-    <div class="d-flex align-items-center gap-2 mb-2">
-      <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;">
-        <i class="bi bi-person-fill text-white" style="font-size:.9rem;"></i>
+    <a th:href="@{/admin/configuracao}" class="sidebar-link"
+       sec:authorize="hasRole('ADMINISTRADOR')"
+       th:classappend="${activePage == 'config'} ? ' active'">
+      <i class="bi bi-sliders2-vertical" aria-hidden="true"></i><span>Configuração</span>
+    </a>
+    <a th:href="@{/admin/usuarios}" class="sidebar-link"
+       sec:authorize="hasRole('ADMINISTRADOR')"
+       th:classappend="${activePage == 'usuarios'} ? ' active'">
+      <i class="bi bi-person-gear" aria-hidden="true"></i><span>Usuários</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" aria-hidden="true">
+        <i class="bi bi-person-fill" style="color:rgba(255,255,255,.7);font-size:.95rem;"></i>
       </div>
       <div>
-        <div class="text-white" style="font-size:.82rem;font-weight:600;" sec:authentication="name">Usuário</div>
-        <div style="font-size:.68rem;color:rgba(255,255,255,.45);" sec:authorize="hasRole('ADMINISTRADOR')">Administrador</div>
-        <div style="font-size:.68rem;color:rgba(255,255,255,.45);" sec:authorize="hasRole('OPERADOR')">Operador</div>
+        <div class="sidebar-user-name" sec:authentication="name">Usuário</div>
+        <div class="sidebar-user-role" sec:authorize="hasRole('ADMINISTRADOR')">Administrador</div>
+        <div class="sidebar-user-role" sec:authorize="hasRole('OPERADOR')">Operador</div>
       </div>
     </div>
     <form th:action="@{/logout}" method="post">
       <button type="submit" class="btn-logout">
-        <i class="bi bi-box-arrow-right"></i> Sair
+        <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sair da conta</span>
       </button>
     </form>
   </div>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- ═══════════════════════════════════════════════════════
+     OVERLAY + BOTÃO MOBILE (fragmento)
+     ═══════════════════════════════════════════════════════ -->
+<th:block th:fragment="overlay">
+  <div id="sidebarOverlay" onclick="FastAriam.sidebar.close()" aria-hidden="true"></div>
+  <button type="button" class="mobile-layout-btn" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
+    <i class="bi bi-list" aria-hidden="true"></i><span>Menu</span>
+  </button>
+</th:block>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCRIPTS GLOBAIS (fragmento) — incluir antes de </body>
+     ═══════════════════════════════════════════════════════ -->
+<th:block th:fragment="scripts">
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Namespace global FastAriam — padrão Módulo (POO) -->
+  <script>
+    window.FastAriam = (function () {
+      'use strict';
+
+      /* ── Sidebar ──────────────────────────────── */
+      var sidebar = (function () {
+        function el()      { return document.getElementById('sidebar'); }
+        function overlay() { return document.getElementById('sidebarOverlay'); }
+        function isMobile(){ return window.matchMedia('(max-width: 768px)').matches; }
+
+        function open() {
+          var s = el(), o = overlay();
+          if (!s) return;
+          s.classList.add('open');
+          if (o) o.style.display = 'block';
+          document.body.style.overflow = 'hidden';
+        }
+        function close() {
+          var s = el(), o = overlay();
+          if (!s) return;
+          s.classList.remove('open');
+          if (o) o.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+        function toggle() {
+          var s = el();
+          if (!s) return;
+          if (s.classList.contains('open')) { close(); } else { open(); }
+        }
+
+        window.addEventListener('resize', function () { if (!isMobile()) close(); }, { passive: true });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+
+        return { open: open, close: close, toggle: toggle };
+      })();
+
+      /* ── Toast ───────────────────────────────── */
+      var toast = (function () {
+        function show(message, type) {
+          type = type || 'info';
+          var box = document.createElement('div');
+          box.className = 'alert alert-' + type + ' fa-alert';
+          box.style.cssText = 'position:fixed;top:76px;right:20px;z-index:9999;min-width:260px;max-width:400px;box-shadow:0 8px 24px rgba(0,0,0,.14)';
+          var icon = (type === 'success') ? 'check-circle-fill' : 'exclamation-circle-fill';
+          box.innerHTML = '<i class="bi bi-' + icon + '"></i><span>' + message + '</span>';
+          document.body.appendChild(box);
+          setTimeout(function () { box.remove(); }, 4000);
+        }
+        return { show: show };
+      })();
+
+      return { sidebar: sidebar, toast: toast };
+    })();
+
+    /* Aliases de compatibilidade (templates antigos) */
+    window.toggleSidebar      = function (fc) { return fc === true ? FastAriam.sidebar.close() : FastAriam.sidebar.toggle(); };
+    window.toggleMobileLayout = function () { return FastAriam.sidebar.toggle(); };
+  </script>
+</th:block>
+
 </body>
 </html>

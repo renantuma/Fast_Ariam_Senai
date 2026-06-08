@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+  <!--
+    layout-scripts.html
+    Este fragmento existe por compatibilidade com páginas que usam
+      th:replace="~{fragments/layout-scripts :: scripts}"
+    O namespace FastAriam já é definido em fragments/layout.html.
+    Aqui apenas garantimos que toggleSidebar e toggleMobileLayout
+    existam como aliases globais (caso alguma página ainda use as funções antigas).
+  -->
+  <th:block th:fragment="scripts">
+    <script>
+      /* Aliases de compatibilidade — evita erros em templates antigos */
+      if (typeof FastAriam !== 'undefined') {
+        window.toggleSidebar     = window.toggleSidebar     || ((fc) => fc === true ? FastAriam.sidebar.close() : FastAriam.sidebar.toggle());
+        window.toggleMobileLayout= window.toggleMobileLayout|| (() => FastAriam.sidebar.toggle());
+      }
+    </script>
+  </th:block>
+</body>
+</html>

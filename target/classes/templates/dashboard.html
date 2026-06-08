@@ -4,187 +4,203 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Dashboard — Fast Ariam</title>
 </head>
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard — Fast Ariam Logística</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
-  <link href="/css/main.css" rel="stylesheet"/>
-</head>
 <body>
 
 <div th:replace="~{fragments/layout :: sidebar}"></div>
+<div th:replace="~{fragments/layout :: overlay}"></div>
 
-<div id="topbar">
-  <span class="topbar-title">Dashboard</span>
-  <a th:href="@{/pedidos/novo}" class="btn-fa-orange btn d-flex align-items-center gap-2">
-    <i class="bi bi-plus-lg"></i> Novo Pedido
-  </a>
-</div>
+<!-- Topbar -->
+<header id="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <button class="topbar-menu-btn" type="button"
+            onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
+      <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <span class="topbar-title">
+      <i class="bi bi-grid-1x2-fill text-fa-blue" aria-hidden="true"></i>
+      Dashboard
+    </span>
+  </div>
+  <div class="topbar-actions">
+    <a th:href="@{/pedidos/novo}" class="btn-fa-orange">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      <span class="btn-label">Novo Pedido</span>
+    </a>
+  </div>
+</header>
 
+<!-- Conteúdo -->
 <main id="main">
+
   <!-- KPIs -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-      <div class="kpi-card" style="background: linear-gradient(135deg,#00478D,#0060C0);">
+      <article class="kpi-card" style="background:linear-gradient(135deg,#00478D,#0070C8);">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="kpi-label text-white">Total Pedidos</div>
-            <div class="kpi-value text-white" th:text="${totalPedidos}">0</div>
+            <p class="kpi-label text-white">Total Pedidos</p>
+            <p class="kpi-value text-white" th:text="${totalPedidos}">0</p>
           </div>
-          <i class="bi bi-file-earmark-text kpi-icon text-white"></i>
+          <i class="bi bi-file-earmark-text kpi-icon text-white" aria-hidden="true"></i>
         </div>
-      </div>
+      </article>
     </div>
     <div class="col-6 col-md-3">
-      <div class="kpi-card" style="background: linear-gradient(135deg,#EB5E28,#FF7A47);">
+      <article class="kpi-card" style="background:linear-gradient(135deg,#E85D20,#FF7A47);">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="kpi-label text-white">Propostas Geradas</div>
-            <div class="kpi-value text-white" th:text="${propostasGeradas}">0</div>
+            <p class="kpi-label text-white">Propostas Geradas</p>
+            <p class="kpi-value text-white" th:text="${propostasGeradas}">0</p>
           </div>
-          <i class="bi bi-file-check kpi-icon text-white"></i>
+          <i class="bi bi-file-check kpi-icon text-white" aria-hidden="true"></i>
         </div>
-      </div>
+      </article>
     </div>
     <div class="col-6 col-md-3">
-      <div class="kpi-card" style="background: linear-gradient(135deg,#059669,#10B981);">
+      <article class="kpi-card" style="background:linear-gradient(135deg,#059669,#10B981);">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="kpi-label text-white">Produtos Cadastrados</div>
-            <div class="kpi-value text-white" th:text="${totalProdutos}">0</div>
+            <p class="kpi-label text-white">Produtos</p>
+            <p class="kpi-value text-white" th:text="${totalProdutos}">0</p>
           </div>
-          <i class="bi bi-box-seam kpi-icon text-white"></i>
+          <i class="bi bi-box-seam kpi-icon text-white" aria-hidden="true"></i>
         </div>
-      </div>
+      </article>
     </div>
     <div class="col-6 col-md-3">
-      <div class="kpi-card" style="background: linear-gradient(135deg,#7C3AED,#9F67FF);">
+      <article class="kpi-card" style="background:linear-gradient(135deg,#7C3AED,#9F67FF);">
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <div class="kpi-label text-white">Cidades Cadastradas</div>
-            <div class="kpi-value text-white" th:text="${totalCidades}">0</div>
+            <p class="kpi-label text-white">Cidades</p>
+            <p class="kpi-value text-white" th:text="${totalCidades}">0</p>
           </div>
-          <i class="bi bi-geo-alt kpi-icon text-white"></i>
+          <i class="bi bi-geo-alt kpi-icon text-white" aria-hidden="true"></i>
         </div>
-      </div>
+      </article>
     </div>
   </div>
 
   <!-- Pedidos Recentes -->
-  <div class="fa-card">
+  <section class="fa-card mb-4">
     <div class="fa-card-header">
-      <span class="fa-card-title">Pedidos Recentes</span>
-      <a th:href="@{/pedidos}" class="btn-outline-fa btn btn-sm">Ver todos</a>
+      <h2 class="fa-card-title">Pedidos Recentes</h2>
+      <a th:href="@{/pedidos}" class="btn-outline-fa">Ver todos</a>
     </div>
 
+    <!-- Estado vazio -->
     <div th:if="${#lists.isEmpty(pedidosRecentes)}" class="text-center py-5 text-muted">
-      <i class="bi bi-inbox" style="font-size:2.5rem; display:block; margin-bottom:12px;"></i>
-      Nenhum pedido encontrado.<br/>
-      <a th:href="@{/pedidos/novo}" class="btn-fa btn mt-3">Criar primeiro pedido</a>
+      <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:12px;" aria-hidden="true"></i>
+      <p>Nenhum pedido encontrado.</p>
+      <a th:href="@{/pedidos/novo}" class="btn-fa mt-3">Criar primeiro pedido</a>
     </div>
 
-    <table th:unless="${#lists.isEmpty(pedidosRecentes)}" class="fa-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Nº Pedido</th>
-          <th>Cliente</th>
-          <th>Destino</th>
-          <th>Volume (m³)</th>
-          <th>Veículo</th>
-          <th>Status</th>
-          <th>Data</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="p : ${pedidosRecentes}">
-          <td class="text-muted" th:text="${p.id}"></td>
-          <td>
-            <span th:text="${p.numeroPedido ?: '—'}" class="fw-500"></span>
-          </td>
-          <td th:text="${p.cliente != null ? p.cliente.nome : '—'}"></td>
-          <td>
-            <span th:if="${p.cidadeDestino != null}"
-                  th:text="${p.cidadeDestino.nome + '/' + p.cidadeDestino.estado}"></span>
-            <span th:unless="${p.cidadeDestino != null}" class="text-muted">—</span>
-          </td>
-          <td th:text="${#numbers.formatDecimal(p.volumeTotalM3, 1, 3)}"></td>
-          <td>
-            <span th:if="${p.veiculoConfirmado != null}" th:text="${p.veiculoConfirmado.descricao}"
-                  class="badge bg-primary rounded-pill"></span>
-            <span th:if="${p.veiculoSugerido != null and p.veiculoConfirmado == null}"
-                  th:text="${p.veiculoSugerido.descricao + '*'}" class="badge bg-secondary rounded-pill"></span>
-          </td>
-          <td>
-            <span class="badge-status"
-                  th:classappend="'badge-' + ${#strings.toLowerCase(p.status.name())}"
-                  th:text="${p.status.name().replace('_',' ')}"></span>
-          </td>
-          <td class="text-muted" th:text="${#temporals.format(p.criadoEm,'dd/MM/yy HH:mm')}"></td>
-          <td>
-            <a th:href="@{/pedidos/{id}(id=${p.id})}" class="btn btn-sm btn-outline-secondary rounded-pill">
-              <i class="bi bi-eye"></i>
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <!-- Tabela -->
+    <div class="table-responsive" th:unless="${#lists.isEmpty(pedidosRecentes)}">
+      <table class="fa-table" aria-label="Pedidos recentes">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nº Pedido</th>
+            <th class="hide-mobile">Cliente</th>
+            <th class="hide-mobile">Destino</th>
+            <th>Volume</th>
+            <th class="hide-mobile">Veículo</th>
+            <th>Status</th>
+            <th class="hide-mobile">Data</th>
+            <th aria-label="Ações"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="p : ${pedidosRecentes}">
+            <td class="text-muted fw-600" th:text="${p.id}"></td>
+            <td class="fw-600" th:text="${p.numeroPedido ?: '—'}"></td>
+            <td class="hide-mobile" th:text="${p.cliente != null ? p.cliente.nome : '—'}"></td>
+            <td class="hide-mobile">
+              <span th:if="${p.cidadeDestino != null}"
+                    th:text="${p.cidadeDestino.nome + '/' + p.cidadeDestino.estado}"></span>
+              <span th:unless="${p.cidadeDestino != null}" class="text-muted">—</span>
+            </td>
+            <td th:text="${#numbers.formatDecimal(p.volumeTotalM3, 1, 3) + ' m³'}"></td>
+            <td class="hide-mobile">
+              <span th:if="${p.veiculoConfirmado != null}"
+                    class="badge bg-primary rounded-pill"
+                    th:text="${p.veiculoConfirmado.descricao}"></span>
+              <span th:if="${p.veiculoSugerido != null and p.veiculoConfirmado == null}"
+                    class="badge bg-secondary rounded-pill"
+                    th:text="${p.veiculoSugerido.descricao + '*'}"></span>
+            </td>
+            <td>
+              <span class="badge-status"
+                    th:classappend="'badge-' + ${#strings.toLowerCase(p.status.name())}"
+                    th:text="${p.status.name().replace('_',' ')}"></span>
+            </td>
+            <td class="hide-mobile text-muted" th:text="${#temporals.format(p.criadoEm,'dd/MM/yy HH:mm')}"></td>
+            <td>
+              <a th:href="@{/pedidos/{id}(id=${p.id})}"
+                 class="btn btn-sm btn-outline-secondary rounded-pill"
+                 aria-label="Ver detalhes do pedido">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <!-- Quick actions -->
-  <div class="row g-3 mt-2">
-    <div class="col-md-4">
-      <a th:href="@{/pedidos/novo}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
-        <div class="d-flex align-items-center gap-3">
-          <div style="width:44px;height:44px;border-radius:12px;background:#EEF5FF;display:flex;align-items:center;justify-content:center;">
-            <i class="bi bi-file-earmark-plus" style="color:#00478D;font-size:1.3rem;"></i>
+  <!-- Atalhos rápidos -->
+  <section aria-label="Atalhos rápidos">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <a th:href="@{/pedidos/novo}" class="fa-card d-block text-decoration-none"
+           style="border:2px dashed var(--fa-border);background:transparent;transition:border-color .18s,box-shadow .18s;"
+           onmouseover="this.style.borderColor='var(--fa-blue)'" onmouseout="this.style.borderColor='var(--fa-border)'">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--fa-blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-file-earmark-plus" style="color:var(--fa-blue);font-size:1.3rem;" aria-hidden="true"></i>
+            </div>
+            <div>
+              <p class="fw-700 mb-0" style="color:var(--fa-text);">Novo Pedido</p>
+              <p class="mb-0" style="font-size:.8rem;color:var(--fa-muted);">Upload PDF ou manual</p>
+            </div>
           </div>
-          <div>
-            <div style="font-weight:600;color:#1A1D2E;">Novo Pedido</div>
-            <div style="font-size:.8rem;color:#6B7280;">Upload PDF ou manual</div>
+        </a>
+      </div>
+      <div class="col-12 col-md-4">
+        <a th:href="@{/admin/produtos}" class="fa-card d-block text-decoration-none"
+           style="border:2px dashed var(--fa-border);background:transparent;transition:border-color .18s;"
+           onmouseover="this.style.borderColor='var(--fa-orange)'" onmouseout="this.style.borderColor='var(--fa-border)'">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--fa-orange-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-box-seam" style="color:var(--fa-orange);font-size:1.3rem;" aria-hidden="true"></i>
+            </div>
+            <div>
+              <p class="fw-700 mb-0" style="color:var(--fa-text);">Catálogo de Produtos</p>
+              <p class="mb-0" style="font-size:.8rem;color:var(--fa-muted);">Linha seca e refrigerados</p>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
+      </div>
+      <div class="col-12 col-md-4">
+        <a th:href="@{/admin/cidades}" class="fa-card d-block text-decoration-none"
+           style="border:2px dashed var(--fa-border);background:transparent;transition:border-color .18s;"
+           onmouseover="this.style.borderColor='var(--fa-success)'" onmouseout="this.style.borderColor='var(--fa-border)'">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--fa-success-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi bi-geo-alt" style="color:var(--fa-success);font-size:1.3rem;" aria-hidden="true"></i>
+            </div>
+            <div>
+              <p class="fw-700 mb-0" style="color:var(--fa-text);">Tabela de Cidades</p>
+              <p class="mb-0" style="font-size:.8rem;color:var(--fa-muted);">Fretes e distâncias</p>
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
-    <div class="col-md-4">
-      <a th:href="@{/admin/produtos}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
-        <div class="d-flex align-items-center gap-3">
-          <div style="width:44px;height:44px;border-radius:12px;background:#FFF1EC;display:flex;align-items:center;justify-content:center;">
-            <i class="bi bi-box-seam" style="color:#EB5E28;font-size:1.3rem;"></i>
-          </div>
-          <div>
-            <div style="font-weight:600;color:#1A1D2E;">Catálogo de Produtos</div>
-            <div style="font-size:.8rem;color:#6B7280;">Linha seca e refrigerados</div>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div class="col-md-4">
-      <a th:href="@{/admin/cidades}" class="fa-card d-block text-decoration-none" style="border: 2px dashed #CBD5E0; background: transparent;">
-        <div class="d-flex align-items-center gap-3">
-          <div style="width:44px;height:44px;border-radius:12px;background:#F0FDF4;display:flex;align-items:center;justify-content:center;">
-            <i class="bi bi-geo-alt" style="color:#059669;font-size:1.3rem;"></i>
-          </div>
-          <div>
-            <div style="font-weight:600;color:#1A1D2E;">Tabela de Cidades</div>
-            <div style="font-size:.8rem;color:#6B7280;">Fretes e distâncias</div>
-          </div>
-        </div>
-      </a>
-    </div>
-  </div>
+  </section>
+
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script th:inline="javascript">
-// Highlight active sidebar link
-document.querySelectorAll('.sidebar-link').forEach(l => {
-  if (l.getAttribute('href') === window.location.pathname) l.classList.add('active');
-});
-</script>
+<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>
