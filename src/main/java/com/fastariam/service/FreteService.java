@@ -11,14 +11,14 @@ import java.util.logging.Logger;
 public class FreteService {
 
     private static final Logger log = Logger.getLogger(FreteService.class.getName());
-    private final CidadeRepository cidadeRepo;
+    private final TarifaFreteRepository tarifaRepo;
     private final ConfiguracaoFreteRepository configRepo;
     private final RoteirizacaoService roteirizacaoService;
 
-    public FreteService(CidadeRepository cidadeRepo,
+    public FreteService(TarifaFreteRepository tarifaRepo,
                         ConfiguracaoFreteRepository configRepo,
                         RoteirizacaoService roteirizacaoService) {
-        this.cidadeRepo = cidadeRepo;
+        this.tarifaRepo = tarifaRepo;
         this.configRepo = configRepo;
         this.roteirizacaoService = roteirizacaoService;
     }
@@ -39,34 +39,39 @@ public class FreteService {
     public ResultadoFreteDTO calcular(String nomeCidade, String estado,
                                        double valorMercadoria, double fatorDescargaCliente,
                                        double volumeTotal) {
-        Cidade cidade = cidadeRepo.findByNomeAndEstado(nomeCidade, estado).orElse(null);
+        // Busca a tarifa da rota; se não existir, gera via API de roteirização.
+        TarifaFrete tarifa = tarifaRepo.buscarPorCidade(nomeCidade, estado).orElse(null);
         boolean viaApi = false;
-        if (cidade == null) {
-            log.info("Cidade " + nomeCidade + " não cadastrada, consultando API...");
-            cidade = roteirizacaoService.buscarDistancia(nomeCidade, estado);
+        if (tarifa == null) {
+            log.info("Tarifa para " + nomeCidade + "/" + estado + " não cadastrada, consultando API...");
+            tarifa = roteirizacaoService.gerarTarifaViaApi(nomeCidade, estado);
             viaApi = true;
         }
 
         ConfiguracaoFrete config = configRepo.getConfiguracao();
         if (config == null) throw new IllegalStateException("Configuração de frete não encontrada.");
 
-        double icms = ICMS_ESTADO.getOrDefault(estado.toUpperCase(), 7.0);
+        // ICMS é derivado do estado (regra fiscal), não armazenado por cidade.
+        double icms = getIcmsEstado(estado);
         double pisCofins = config.getPisCofinsPercent();
         double margemComercial = config.getMargemComercialPercent();
-        double freteBaseTruck = cidade.getFreteBaseKmTruck() * cidade.getDistanciaKm();
-        double freteBaseCarreta = cidade.getFreteBaseKmCarreta() * cidade.getDistanciaKm();
+
+        // Frete-base agora é responsabilidade da própria tarifa (modelo rico).
+        double freteBaseTruck = tarifa.freteBaseTruck();
+        double freteBaseCarreta = tarifa.freteBaseCarreta();
+
         double adValorem = valorMercadoria * (config.getAdValoremDefault() / 100.0);
         double descargarTruck = config.getDescargarManualTruck() * fatorDescargaCliente;
         double descargarCarreta = config.getDescargarManualCarreta() * fatorDescargaCliente;
         double pctImpostos = (icms + pisCofins) / 100.0;
 
-        double subtotalTruck = freteBaseTruck + cidade.getPedagioTruck() + descargarTruck + adValorem;
+        double subtotalTruck = freteBaseTruck + tarifa.getPedagioTruck() + descargarTruck + adValorem;
         double impostosTruck = subtotalTruck * pctImpostos;
         double comImpostosTruck = subtotalTruck + impostosTruck;
         double margemTruck = comImpostosTruck * (margemComercial / 100.0);
         double totalTruck = comImpostosTruck + margemTruck;
 
-        double subtotalCarreta = freteBaseCarreta + cidade.getPedagioCarreta() + descargarCarreta + adValorem;
+        double subtotalCarreta = freteBaseCarreta + tarifa.getPedagioCarreta() + descargarCarreta + adValorem;
         double impostosCarreta = subtotalCarreta * pctImpostos;
         double comImpostosCarreta = subtotalCarreta + impostosCarreta;
         double margemCarreta = comImpostosCarreta * (margemComercial / 100.0);
@@ -74,21 +79,22 @@ public class FreteService {
 
         return ResultadoFreteDTO.builder()
                 .cidadeDestino(nomeCidade).estadoDestino(estado)
-                .distanciaKm(cidade.getDistanciaKm())
-                .freteBaseTruck(r2(freteBaseTruck)).pedagioTruck(r2(cidade.getPedagioTruck()))
+                .distanciaKm(tarifa.getDistanciaKm())
+                .freteBaseTruck(r2(freteBaseTruck)).pedagioTruck(r2(tarifa.getPedagioTruck()))
                 .descargarTruck(r2(descargarTruck)).adValoremTruck(r2(adValorem))
                 .impostosTruck(r2(impostosTruck)).subtotalTruck(r2(subtotalTruck))
                 .margemTruck(r2(margemTruck)).totalTruck(r2(totalTruck))
-                .freteBaseCarreta(r2(freteBaseCarreta)).pedagioCarreta(r2(cidade.getPedagioCarreta()))
+                .freteBaseCarreta(r2(freteBaseCarreta)).pedagioCarreta(r2(tarifa.getPedagioCarreta()))
                 .descargarCarreta(r2(descargarCarreta)).adValoremCarreta(r2(adValorem))
                 .impostosCarreta(r2(impostosCarreta)).subtotalCarreta(r2(subtotalCarreta))
                 .margemCarreta(r2(margemCarreta)).totalCarreta(r2(totalCarreta))
                 .icmsPercent(icms).pisCofinsPercent(pisCofins)
                 .margemComercialPercent(margemComercial).fatorDescargaCliente(fatorDescargaCliente)
                 .veiculoRecomendado(TipoVeiculo.sugerirPorVolume(volumeTotal))
-                .cidadeViaApi(viaApi).build();
+                .cidadeViaApi(viaApi || tarifa.isOrigemApi()).build();
     }
 
+    /** Alíquota de ICMS conforme o estado de destino (regra fiscal centralizada). */
     public static double getIcmsEstado(String estado) {
         return ICMS_ESTADO.getOrDefault(estado.toUpperCase(), 7.0);
     }

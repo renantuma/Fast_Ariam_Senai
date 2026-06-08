@@ -76,8 +76,11 @@ public class PedidoController {
 
     @GetMapping("/revisar-itens")
     public String revisarItens(Model model) {
+        // Entrada manual: sem itens vindos do PDF, abrimos a tela com lista
+        // vazia (o template exibe uma linha em branco para preenchimento).
         if (!model.containsAttribute("itensExtraidos")) {
-            return "redirect:/pedidos/novo";
+            model.addAttribute("itensExtraidos", java.util.List.of());
+            model.addAttribute("entradaManual", true);
         }
         model.addAttribute("produtos", produtoRepo.findByAtivoTrue());
         return "pedidos/revisar-itens";

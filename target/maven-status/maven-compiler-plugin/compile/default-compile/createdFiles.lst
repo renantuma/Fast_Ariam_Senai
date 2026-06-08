@@ -13,6 +13,8 @@ com\fastariam\model\Cidade.class
 com\fastariam\controller\AdminController.class
 com\fastariam\service\FreteService.class
 com\fastariam\config\DataInitializer.class
+com\fastariam\repository\TarifaFreteRepository.class
+com\fastariam\config\DataInitializer$1Spec.class
 com\fastariam\model\Produto$Builder.class
 com\fastariam\controller\ApiController.class
 com\fastariam\model\CategoriaLinhaSeca.class
@@ -23,10 +25,12 @@ com\fastariam\model\PerfilUsuario.class
 com\fastariam\model\Proposta.class
 com\fastariam\service\PedidoService.class
 com\fastariam\model\Proposta$Builder.class
+com\fastariam\model\TarifaFrete$Builder.class
 com\fastariam\model\Cidade$Builder.class
 com\fastariam\dto\ItemExtraidoDTO$Builder.class
 com\fastariam\model\ItemPedido$Builder.class
 com\fastariam\service\PdfExtratorService.class
+com\fastariam\model\TarifaFrete.class
 com\fastariam\repository\PedidoRepository.class
 com\fastariam\repository\UsuarioRepository.class
 com\fastariam\model\TipoVeiculo.class
@@ -38,6 +42,7 @@ com\fastariam\dto\ResultadoVolumetriaDTO.class
 com\fastariam\dto\ResultadoVolumetriaDTO$Builder.class
 com\fastariam\dto\ResultadoVolumetriaDTO$ItemVolumeDTO$ItemVolumeDTOBuilder.class
 com\fastariam\repository\PropostaRepository.class
+com\fastariam\dto\CidadeTarifaView.class
 com\fastariam\model\Pedido.class
 com\fastariam\repository\ClienteRepository.class
 com\fastariam\model\Usuario$Builder.class

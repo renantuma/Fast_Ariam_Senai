@@ -1,7 +1,9 @@
 package com.fastariam.service;
 
 import com.fastariam.model.Cidade;
+import com.fastariam.model.TarifaFrete;
 import com.fastariam.repository.CidadeRepository;
+import com.fastariam.repository.TarifaFreteRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,7 @@ public class RoteirizacaoService {
     private static final Logger log = Logger.getLogger(RoteirizacaoService.class.getName());
     private final WebClient.Builder webClientBuilder;
     private final CidadeRepository cidadeRepository;
+    private final TarifaFreteRepository tarifaRepository;
     private final ObjectMapper objectMapper;
 
     @Value("${app.googlemaps.api-key:}")
@@ -29,14 +32,20 @@ public class RoteirizacaoService {
 
     public RoteirizacaoService(WebClient.Builder webClientBuilder,
                                 CidadeRepository cidadeRepository,
+                                TarifaFreteRepository tarifaRepository,
                                 ObjectMapper objectMapper) {
         this.webClientBuilder = webClientBuilder;
         this.cidadeRepository = cidadeRepository;
+        this.tarifaRepository = tarifaRepository;
         this.objectMapper = objectMapper;
     }
 
-    public Cidade buscarDistancia(String nomeCidade, String estado) {
-        double distanciaKm = 0;
+    /**
+     * Consulta a distância da rota (Google Maps / OSRM / estimativa) e gera
+     * uma tarifa de frete para a cidade de destino, persistindo cidade + tarifa.
+     */
+    public TarifaFrete gerarTarifaViaApi(String nomeCidade, String estado) {
+        double distanciaKm;
         try {
             if (googleMapsApiKey != null && !googleMapsApiKey.isBlank() && !googleMapsApiKey.equals("SUA_CHAVE_AQUI")) {
                 distanciaKm = buscarViaGoogleMaps(nomeCidade, estado);
@@ -48,16 +57,22 @@ public class RoteirizacaoService {
             distanciaKm = estimarDistanciaPorEstado(estado);
         }
 
-        double icms = FreteService.getIcmsEstado(estado);
-        Cidade cidade = Cidade.builder()
-                .nome(nomeCidade).estado(estado.toUpperCase())
-                .distanciaKm(distanciaKm).icmsPercent(icms)
+        // Reaproveita a cidade se já existir; caso contrário, cria a identidade.
+        Cidade cidade = cidadeRepository.findByNomeAndEstado(nomeCidade, estado)
+                .orElseGet(() -> cidadeRepository.save(
+                        Cidade.builder().nome(nomeCidade).estado(estado.toUpperCase()).build()));
+
+        TarifaFrete tarifa = TarifaFrete.builder()
+                .cidade(cidade)
+                .distanciaKm(distanciaKm)
                 .pedagioTruck(distanciaKm * PEDAGIO_KM_TRUCK)
                 .pedagioCarreta(distanciaKm * PEDAGIO_KM_CARRETA)
                 .freteBaseKmTruck(FRETE_KM_TRUCK_PADRAO)
                 .freteBaseKmCarreta(FRETE_KM_CARRETA_PADRAO)
-                .viaApi(true).build();
-        return cidadeRepository.save(cidade);
+                .origemApi(true)
+                .build();
+
+        return tarifaRepository.save(tarifa);
     }
 
     private double buscarViaOSRM(String nomeCidade, String estado) throws Exception {

@@ -5,6 +5,7 @@ C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastar
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\ClienteController.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\DashboardController.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\controller\PedidoController.java
+C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\CidadeTarifaView.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ItemExtraidoDTO.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoFreteDTO.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\dto\ResultadoVolumetriaDTO.java
@@ -19,6 +20,7 @@ C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastar
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Produto.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Proposta.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\StatusPedido.java
+C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TarifaFrete.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoProduto.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\TipoVeiculo.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\model\Usuario.java
@@ -28,6 +30,7 @@ C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastar
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PedidoRepository.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\ProdutoRepository.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\PropostaRepository.java
+C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\TarifaFreteRepository.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\repository\UsuarioRepository.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\service\FreteService.java
 C:\Users\renan\Desktop\Projeto_Jornada\Fast_Ariam_Senai\src\main\java\com\fastariam\service\PdfExtratorService.java

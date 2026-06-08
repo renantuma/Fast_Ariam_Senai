@@ -65,8 +65,8 @@
             <td th:text="'R$ ' + ${#numbers.formatDecimal(c.pedagioCarreta,1,'POINT',2,'COMMA')}"></td>
             <td th:text="${c.icmsPercent + '%'}"></td>
             <td>
-              <span th:if="${c.viaApi}" class="badge bg-info text-dark">API</span>
-              <span th:unless="${c.viaApi}" class="badge bg-light text-dark">Manual</span>
+              <span th:if="${c.origemApi}" class="badge bg-info text-dark">API</span>
+              <span th:unless="${c.origemApi}" class="badge bg-light text-dark">Manual</span>
             </td>
             <td>
               <form th:action="@{/admin/cidades/{id}/excluir(id=${c.id})}" method="post" class="d-inline"
@@ -108,8 +108,12 @@
               <input type="number" name="pedagioTruck" class="form-control" step="0.01" value="0"/></div>
             <div class="col-md-4"><label class="form-label">Pedágio Carreta (R$)</label>
               <input type="number" name="pedagioCarreta" class="form-control" step="0.01" value="0"/></div>
-            <div class="col-md-4"><label class="form-label">ICMS % *</label>
-              <input type="number" name="icmsPercent" class="form-control" step="0.01" required value="7.0"/></div>
+            <div class="col-12">
+              <p class="text-muted mb-0" style="font-size:.8rem;">
+                <i class="bi bi-info-circle me-1"></i>
+                O ICMS é calculado automaticamente conforme o estado de destino.
+              </p>
+            </div>
           </div>
         </div>
         <div class="modal-footer border-0 px-4 pb-4">

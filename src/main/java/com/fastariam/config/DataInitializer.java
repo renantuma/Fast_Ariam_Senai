@@ -17,14 +17,17 @@ public class DataInitializer implements CommandLineRunner {
     private final ClienteRepository clienteRepo;
     private final CidadeRepository cidadeRepo;
     private final ConfiguracaoFreteRepository configRepo;
+    private final TarifaFreteRepository tarifaRepo;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(UsuarioRepository usuarioRepo, ProdutoRepository produtoRepo,
                             ClienteRepository clienteRepo, CidadeRepository cidadeRepo,
-                            ConfiguracaoFreteRepository configRepo, PasswordEncoder passwordEncoder) {
+                            ConfiguracaoFreteRepository configRepo, TarifaFreteRepository tarifaRepo,
+                            PasswordEncoder passwordEncoder) {
         this.usuarioRepo = usuarioRepo; this.produtoRepo = produtoRepo;
         this.clienteRepo = clienteRepo; this.cidadeRepo = cidadeRepo;
-        this.configRepo = configRepo; this.passwordEncoder = passwordEncoder;
+        this.configRepo = configRepo; this.tarifaRepo = tarifaRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -113,37 +116,54 @@ public class DataInitializer implements CommandLineRunner {
 
     private void initCidades() {
         if (cidadeRepo.count() > 0) return;
-        List<Cidade> cidades = List.of(
-            cidade("São Paulo","SP",430,4.80,6.20,180,280,12.0),
-            cidade("Campinas","SP",480,4.80,6.20,160,250,12.0),
-            cidade("Ribeirão Preto","SP",290,4.50,5.80,120,180,12.0),
-            cidade("Santos","SP",520,5.20,6.80,200,320,12.0),
-            cidade("Sorocaba","SP",460,4.80,6.20,170,260,12.0),
-            cidade("Curitiba","PR",110,3.80,4.90,80,120,18.0),
-            cidade("Maringá","PR",100,3.50,4.50,60,90,18.0),
-            cidade("Cascavel","PR",280,4.20,5.40,100,150,18.0),
-            cidade("Foz do Iguaçu","PR",380,4.50,5.80,120,180,18.0),
-            cidade("Rio de Janeiro","RJ",900,6.50,8.50,320,480,12.0),
-            cidade("Belo Horizonte","MG",700,5.80,7.50,250,380,12.0),
-            cidade("Porto Alegre","RS",900,6.20,8.00,300,450,12.0),
-            cidade("Florianópolis","SC",580,5.40,7.00,220,330,12.0),
-            cidade("Joinville","SC",500,5.20,6.80,200,300,12.0),
-            cidade("Campo Grande","MS",600,5.60,7.20,230,350,7.0),
-            cidade("Goiânia","GO",900,6.20,8.00,300,450,7.0),
-            cidade("Brasília","DF",1000,6.50,8.50,320,480,7.0),
-            cidade("Salvador","BA",1800,8.50,11.00,500,750,7.0),
-            cidade("Recife","PE",2500,10.00,13.00,650,980,7.0),
-            cidade("Fortaleza","CE",2800,10.50,13.50,700,1050,7.0),
-            cidade("Manaus","AM",3500,12.00,15.50,900,1350,7.0),
-            cidade("Belém","PA",3000,11.00,14.00,800,1200,7.0),
-            cidade("Cuiabá","MT",1200,7.00,9.00,380,570,7.0),
-            cidade("Uberlândia","MG",520,5.20,6.80,200,300,12.0),
-            cidade("Londrina","PR",0,0,0,0,0,18.0),
-            cidade("Maringá","PR",100,3.50,4.50,60,90,18.0),
-            cidade("Caxias do Sul","RS",1000,6.50,8.50,320,480,12.0)
+
+        // Cada spec: nome, UF, distância(km), frete/km truck, frete/km carreta, pedágio truck, pedágio carreta
+        record Spec(String nome, String uf, double km, double ftTruck, double ftCarreta,
+                    double pedTruck, double pedCarreta) {}
+
+        List<Spec> specs = List.of(
+            new Spec("São Paulo","SP",430,4.80,6.20,180,280),
+            new Spec("Campinas","SP",480,4.80,6.20,160,250),
+            new Spec("Ribeirão Preto","SP",290,4.50,5.80,120,180),
+            new Spec("Santos","SP",520,5.20,6.80,200,320),
+            new Spec("Sorocaba","SP",460,4.80,6.20,170,260),
+            new Spec("Curitiba","PR",110,3.80,4.90,80,120),
+            new Spec("Maringá","PR",100,3.50,4.50,60,90),
+            new Spec("Cascavel","PR",280,4.20,5.40,100,150),
+            new Spec("Foz do Iguaçu","PR",380,4.50,5.80,120,180),
+            new Spec("Rio de Janeiro","RJ",900,6.50,8.50,320,480),
+            new Spec("Belo Horizonte","MG",700,5.80,7.50,250,380),
+            new Spec("Porto Alegre","RS",900,6.20,8.00,300,450),
+            new Spec("Florianópolis","SC",580,5.40,7.00,220,330),
+            new Spec("Joinville","SC",500,5.20,6.80,200,300),
+            new Spec("Campo Grande","MS",600,5.60,7.20,230,350),
+            new Spec("Goiânia","GO",900,6.20,8.00,300,450),
+            new Spec("Brasília","DF",1000,6.50,8.50,320,480),
+            new Spec("Salvador","BA",1800,8.50,11.00,500,750),
+            new Spec("Recife","PE",2500,10.00,13.00,650,980),
+            new Spec("Fortaleza","CE",2800,10.50,13.50,700,1050),
+            new Spec("Manaus","AM",3500,12.00,15.50,900,1350),
+            new Spec("Belém","PA",3000,11.00,14.00,800,1200),
+            new Spec("Cuiabá","MT",1200,7.00,9.00,380,570),
+            new Spec("Uberlândia","MG",520,5.20,6.80,200,300),
+            new Spec("Londrina","PR",0,0,0,0,0),
+            new Spec("Caxias do Sul","RS",1000,6.50,8.50,320,480)
         );
-        cidadeRepo.saveAll(cidades);
-        log.info(cidades.size() + " cidades cadastradas");
+
+        for (Spec s : specs) {
+            Cidade cidade = cidadeRepo.save(
+                    Cidade.builder().nome(s.nome()).estado(s.uf()).build());
+            tarifaRepo.save(TarifaFrete.builder()
+                    .cidade(cidade)
+                    .distanciaKm(s.km())
+                    .freteBaseKmTruck(s.ftTruck())
+                    .freteBaseKmCarreta(s.ftCarreta())
+                    .pedagioTruck(s.pedTruck())
+                    .pedagioCarreta(s.pedCarreta())
+                    .origemApi(false)
+                    .build());
+        }
+        log.info(specs.size() + " cidades + tarifas cadastradas");
     }
 
     private Produto p(String cod,String desc,String ant,TipoProduto tipo,CategoriaLinhaSeca cat,double fator) {
@@ -156,12 +176,5 @@ public class DataInitializer implements CommandLineRunner {
     }
     private Cliente c(String nome,double fator) {
         return Cliente.builder().nome(nome).fatorDescarga(fator).ativo(true).build();
-    }
-    private Cidade cidade(String nome,String estado,double km,double ftTruck,double ftCarreta,
-                           double pedTruck,double pedCarreta,double icms) {
-        return Cidade.builder().nome(nome).estado(estado).distanciaKm(km)
-                .freteBaseKmTruck(ftTruck).freteBaseKmCarreta(ftCarreta)
-                .pedagioTruck(pedTruck).pedagioCarreta(pedCarreta)
-                .icmsPercent(icms).viaApi(false).build();
     }
 }

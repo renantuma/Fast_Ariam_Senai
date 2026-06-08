@@ -37,6 +37,8 @@ public class SecurityConfig {
                 .failureUrl("/login?error=true").permitAll()
             )
             .logout(logout -> logout.logoutSuccessUrl("/login?logout=true").permitAll())
+            .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, denied) ->
+                    response.sendRedirect(request.getContextPath() + "/dashboard?semAcesso")))
             .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .headers(h -> h.frameOptions(fo -> fo.sameOrigin()));
         return http.build();

@@ -8,6 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fastariam.dto.CidadeTarifaView;
+import com.fastariam.service.FreteService;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -19,14 +22,17 @@ public class AdminController {
     private final CidadeRepository cidadeRepo;
     private final ClienteRepository clienteRepo;
     private final ConfiguracaoFreteRepository configRepo;
+    private final TarifaFreteRepository tarifaRepo;
     private final PasswordEncoder passwordEncoder;
 
     public AdminController(UsuarioRepository usuarioRepo, ProdutoRepository produtoRepo,
                             CidadeRepository cidadeRepo, ClienteRepository clienteRepo,
-                            ConfiguracaoFreteRepository configRepo, PasswordEncoder passwordEncoder) {
+                            ConfiguracaoFreteRepository configRepo, TarifaFreteRepository tarifaRepo,
+                            PasswordEncoder passwordEncoder) {
         this.usuarioRepo = usuarioRepo; this.produtoRepo = produtoRepo;
         this.cidadeRepo = cidadeRepo; this.clienteRepo = clienteRepo;
-        this.configRepo = configRepo; this.passwordEncoder = passwordEncoder;
+        this.configRepo = configRepo; this.tarifaRepo = tarifaRepo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // ---- Usuários ----
@@ -132,11 +138,19 @@ public class AdminController {
     // ---- Cidades ----
     @GetMapping("/cidades")
     public String cidades(Model model, @RequestParam(required = false) String estado) {
-        if (estado != null && !estado.isBlank()) {
-            model.addAttribute("cidades", cidadeRepo.findByEstadoOrderByNome(estado));
-        } else {
-            model.addAttribute("cidades", cidadeRepo.findAll());
+        List<Cidade> cidades = (estado != null && !estado.isBlank())
+                ? cidadeRepo.findByEstadoOrderByNome(estado)
+                : cidadeRepo.findAll();
+
+        // Monta a projeção cidade + tarifa + ICMS (derivado do estado) para a view.
+        List<CidadeTarifaView> linhas = new ArrayList<>();
+        for (Cidade c : cidades) {
+            var tarifa = tarifaRepo.findByCidade(c).orElse(null);
+            double icms = FreteService.getIcmsEstado(c.getEstado());
+            linhas.add(new CidadeTarifaView(c, tarifa, icms));
         }
+
+        model.addAttribute("cidades", linhas);
         model.addAttribute("estados", cidadeRepo.findAllEstados());
         return "admin/cidades";
     }
@@ -150,31 +164,36 @@ public class AdminController {
                                 @RequestParam double freteBaseKmCarreta,
                                 @RequestParam double pedagioTruck,
                                 @RequestParam double pedagioCarreta,
-                                @RequestParam double icmsPercent,
                                 RedirectAttributes ra) {
-        Cidade c;
-        if (id != null) {
-            c = cidadeRepo.findById(id).orElse(new Cidade());
-        } else {
-            c = new Cidade();
-        }
-        c.setNome(nome);
-        c.setEstado(estado.toUpperCase());
-        c.setDistanciaKm(distanciaKm);
-        c.setFreteBaseKmTruck(freteBaseKmTruck);
-        c.setFreteBaseKmCarreta(freteBaseKmCarreta);
-        c.setPedagioTruck(pedagioTruck);
-        c.setPedagioCarreta(pedagioCarreta);
-        c.setIcmsPercent(icmsPercent);
-        c.setViaApi(false);
-        cidadeRepo.save(c);
+        // ICMS não é mais recebido: é derivado do estado em tempo de cálculo.
+        Cidade cidade = (id != null)
+                ? cidadeRepo.findById(id).orElseGet(Cidade::new)
+                : new Cidade();
+        cidade.setNome(nome);
+        cidade.setEstado(estado.toUpperCase());
+        cidade = cidadeRepo.save(cidade);
+
+        // Tarifa associada (cria ou atualiza).
+        TarifaFrete tarifa = tarifaRepo.findByCidade(cidade).orElseGet(TarifaFrete::new);
+        tarifa.setCidade(cidade);
+        tarifa.setDistanciaKm(distanciaKm);
+        tarifa.setFreteBaseKmTruck(freteBaseKmTruck);
+        tarifa.setFreteBaseKmCarreta(freteBaseKmCarreta);
+        tarifa.setPedagioTruck(pedagioTruck);
+        tarifa.setPedagioCarreta(pedagioCarreta);
+        tarifa.setOrigemApi(false);
+        tarifaRepo.save(tarifa);
+
         ra.addFlashAttribute("sucesso", "Cidade salva com sucesso!");
         return "redirect:/admin/cidades";
     }
 
     @PostMapping("/cidades/{id}/excluir")
     public String excluirCidade(@PathVariable Long id, RedirectAttributes ra) {
-        cidadeRepo.deleteById(id);
+        cidadeRepo.findById(id).ifPresent(cidade -> {
+            tarifaRepo.deleteByCidade(cidade); // remove a tarifa dependente primeiro
+            cidadeRepo.delete(cidade);
+        });
         ra.addFlashAttribute("sucesso", "Cidade removida.");
         return "redirect:/admin/cidades";
     }
