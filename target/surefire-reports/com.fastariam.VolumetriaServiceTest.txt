@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: com.fastariam.VolumetriaServiceTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 1.240 s <<< FAILURE! -- in com.fastariam.VolumetriaServiceTest
-com.fastariam.VolumetriaServiceTest.sugestaoVeiculoPorVolume -- Time elapsed: 1.201 s <<< ERROR!
+Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.096 s <<< FAILURE! -- in com.fastariam.VolumetriaServiceTest
+com.fastariam.VolumetriaServiceTest.sugestaoVeiculoPorVolume -- Time elapsed: 0.083 s <<< ERROR!
 org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
 
 Unnecessary stubbings detected.

@@ -21,6 +21,26 @@
     <i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span>
   </div>
 
+  <!-- Abas -->
+  <ul class="nav fa-tabs mb-4" id="configTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-frete-btn" data-bs-toggle="tab" data-bs-target="#tab-frete"
+              type="button" role="tab" aria-controls="tab-frete" aria-selected="true">
+        <i class="bi bi-truck me-2" aria-hidden="true"></i>Frete
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-aparencia-btn" data-bs-toggle="tab" data-bs-target="#tab-aparencia"
+              type="button" role="tab" aria-controls="tab-aparencia" aria-selected="false">
+        <i class="bi bi-palette me-2" aria-hidden="true"></i>Aparência
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="configTabsContent">
+
+  <!-- ══════════════════ ABA: FRETE (conteúdo original) ══════════════════ -->
+  <div class="tab-pane fade show active" id="tab-frete" role="tabpanel" aria-labelledby="tab-frete-btn">
   <div class="row g-4">
     <div class="col-md-7">
       <div class="fa-card">
@@ -29,28 +49,28 @@
           <input type="hidden" name="id" th:value="${config.id}"/>
           <div class="row g-3">
             <div class="col-12">
-              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#6B7280;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--fa-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
                 Valores de Descarga (R$)
               </h6>
             </div>
             <div class="col-md-4">
               <label class="form-label">Empilhadeira</label>
-              <input type="number" name="descargarEmpilhadeira" class="form-control" step="0.01"
-                     th:value="${config.descargarEmpilhadeira}"/>
+              <input type="number" name="custoDescargaEmpilhadeira" class="form-control" step="0.01"
+                     th:value="${config.custoDescargaEmpilhadeira}"/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Manual Truck</label>
-              <input type="number" name="descargarManualTruck" class="form-control" step="0.01"
-                     th:value="${config.descargarManualTruck}"/>
+              <input type="number" name="custoDescargaManualTruck" class="form-control" step="0.01"
+                     th:value="${config.custoDescargaManualTruck}"/>
             </div>
             <div class="col-md-4">
               <label class="form-label">Manual Carreta</label>
-              <input type="number" name="descargarManualCarreta" class="form-control" step="0.01"
-                     th:value="${config.descargarManualCarreta}"/>
+              <input type="number" name="custoDescargaManualCarreta" class="form-control" step="0.01"
+                     th:value="${config.custoDescargaManualCarreta}"/>
             </div>
 
             <div class="col-12 mt-2">
-              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#6B7280;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--fa-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
                 Impostos e Margens (%)
               </h6>
             </div>
@@ -67,19 +87,19 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Ad Valorem Default %</label>
-              <input type="number" name="adValoremDefault" class="form-control" step="0.01"
-                     th:value="${config.adValoremDefault}"/>
+              <input type="number" name="adValoremPercent" class="form-control" step="0.01"
+                     th:value="${config.adValoremPercent}"/>
             </div>
 
             <div class="col-12 mt-2">
-              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:#6B7280;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
+              <h6 style="font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--fa-muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;">
                 Volumetria
               </h6>
             </div>
             <div class="col-md-6">
               <label class="form-label">Capacidade Carreta/Baú (m³)</label>
-              <input type="number" name="capacidadeCarretaM3" class="form-control" step="0.5"
-                     th:value="${config.capacidadeCarretaM3}"/>
+              <input type="number" name="volumeUtilCarretaM3" class="form-control" step="0.5"
+                     th:value="${config.volumeUtilCarretaM3}"/>
             </div>
           </div>
 
@@ -136,7 +156,148 @@
       </div>
     </div>
   </div>
+  </div> <!-- /tab-frete -->
+
+  <!-- ══════════════════ ABA: APARÊNCIA (nova) ══════════════════ -->
+  <div class="tab-pane fade" id="tab-aparencia" role="tabpanel" aria-labelledby="tab-aparencia-btn">
+    <div class="row g-4">
+      <div class="col-md-7">
+        <div class="fa-card">
+          <div class="fa-card-title mb-1">Tema</div>
+          <p class="text-muted mb-3" style="font-size:.85rem;">
+            Escolha como as telas do sistema aparecem neste navegador.
+          </p>
+          <div class="row g-3 mb-4" id="themeOptions">
+            <div class="col-4">
+              <button type="button" class="theme-option-card w-100" data-theme-value="light" aria-pressed="false">
+                <span class="theme-swatch theme-swatch-light" aria-hidden="true"><i class="bi bi-sun-fill"></i></span>
+                <span class="theme-option-label">Claro</span>
+              </button>
+            </div>
+            <div class="col-4">
+              <button type="button" class="theme-option-card w-100" data-theme-value="dark" aria-pressed="false">
+                <span class="theme-swatch theme-swatch-dark" aria-hidden="true"><i class="bi bi-moon-stars-fill"></i></span>
+                <span class="theme-option-label">Escuro</span>
+              </button>
+            </div>
+            <div class="col-4">
+              <button type="button" class="theme-option-card w-100" data-theme-value="auto" aria-pressed="false">
+                <span class="theme-swatch theme-swatch-auto" aria-hidden="true"><i class="bi bi-circle-half"></i></span>
+                <span class="theme-option-label">Automático</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-muted mb-4" style="font-size:.75rem;margin-top:-10px;">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            "Automático" segue a preferência de tema do seu sistema operacional.
+          </p>
+
+          <div class="fa-card-title mb-1">Tamanho da fonte</div>
+          <p class="text-muted mb-3" style="font-size:.85rem;">
+            Ajusta o tamanho do texto em todas as telas do sistema.
+          </p>
+          <div class="btn-group-chips mb-4" id="fontSizeOptions">
+            <button type="button" class="chip-option" data-font-size-value="sm" aria-pressed="false">Pequena</button>
+            <button type="button" class="chip-option" data-font-size-value="md" aria-pressed="false">Média</button>
+            <button type="button" class="chip-option" data-font-size-value="lg" aria-pressed="false">Grande</button>
+          </div>
+
+          <div class="fa-card-title mb-1">Fonte</div>
+          <p class="text-muted mb-3" style="font-size:.85rem;">
+            Escolha entre a fonte padrão do Fast Ariam (Sora / Nunito) ou a fonte nativa do seu sistema operacional.
+          </p>
+          <div class="btn-group-chips mb-4" id="fontFamilyOptions">
+            <button type="button" class="chip-option" data-font-family-value="padrao" aria-pressed="false">Padrão</button>
+            <button type="button" class="chip-option" data-font-family-value="sistema" aria-pressed="false">Fonte do sistema</button>
+          </div>
+
+          <button type="button" class="btn-outline-fa mt-2" id="btnRestaurarAparencia">
+            <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Restaurar padrão
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="fa-card">
+          <div class="fa-card-title mb-3">Pré-visualização</div>
+          <div class="preview-box">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="fa-step-circle" style="background:var(--fa-blue);color:#fff;" aria-hidden="true">A</div>
+              <div>
+                <div class="fw-700 font-display">Exemplo de título</div>
+                <div class="text-muted" style="font-size:.8rem;">Assim os textos vão aparecer no sistema</div>
+              </div>
+            </div>
+            <p style="font-size:.88rem;line-height:1.6;">
+              Este é um parágrafo de exemplo para você visualizar o tema, o tamanho e a fonte
+              escolhidos antes de aplicar em todas as telas.
+            </p>
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+              <span class="btn-fa" style="pointer-events:none;">Botão primário</span>
+              <span class="btn-outline-fa" style="pointer-events:none;">Botão secundário</span>
+              <span class="badge-status badge-proposta_gerada">Exemplo</span>
+            </div>
+          </div>
+          <div class="text-muted mt-3" style="font-size:.75rem;">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            Essas preferências ficam salvas neste navegador e não afetam outros usuários do sistema.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!-- /tab-aparencia -->
+
+  </div> <!-- /configTabsContent -->
 </main>
 <div th:replace="~{fragments/layout :: scripts}"></div>
+
+<!-- Script específico desta página: liga os botões de Aparência ao FastAriam.theme -->
+<script>
+  (function () {
+    function marcarSelecionado(container, atributo, valorAtual) {
+      container.querySelectorAll('[' + atributo + ']').forEach(function (btn) {
+        var ehAtual = btn.getAttribute(atributo) === valorAtual;
+        btn.classList.toggle('selected', ehAtual);
+        btn.setAttribute('aria-pressed', ehAtual ? 'true' : 'false');
+      });
+    }
+
+    function atualizarUI() {
+      var prefs = FastAriam.theme.preferencias();
+      marcarSelecionado(document.getElementById('themeOptions'), 'data-theme-value', prefs.tema);
+      marcarSelecionado(document.getElementById('fontSizeOptions'), 'data-font-size-value', prefs.tamanho);
+      marcarSelecionado(document.getElementById('fontFamilyOptions'), 'data-font-family-value', prefs.fonte);
+    }
+
+    document.getElementById('themeOptions').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-theme-value]');
+      if (!btn) return;
+      FastAriam.theme.setTema(btn.getAttribute('data-theme-value'));
+      atualizarUI();
+    });
+
+    document.getElementById('fontSizeOptions').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-font-size-value]');
+      if (!btn) return;
+      FastAriam.theme.setTamanho(btn.getAttribute('data-font-size-value'));
+      atualizarUI();
+    });
+
+    document.getElementById('fontFamilyOptions').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-font-family-value]');
+      if (!btn) return;
+      FastAriam.theme.setFonte(btn.getAttribute('data-font-family-value'));
+      atualizarUI();
+    });
+
+    document.getElementById('btnRestaurarAparencia').addEventListener('click', function () {
+      FastAriam.theme.restaurarPadrao();
+      atualizarUI();
+      FastAriam.toast.show('Aparência restaurada para o padrão.', 'success');
+    });
+
+    document.addEventListener('DOMContentLoaded', atualizarUI);
+  })();
+</script>
 </body>
 </html>

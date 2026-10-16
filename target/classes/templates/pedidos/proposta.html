@@ -4,17 +4,18 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Fast Ariam</title>
 </head>
+
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div th:replace="~{fragments/layout :: overlay}"></div>
-<header id="topbar">
-  <div class="d-flex align-items-center gap-2" style="min-width:0;">
-    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
-      <i class="bi bi-list" aria-hidden="true"></i>
-    </button>
-    <span class="topbar-title text-truncate"><i class="bi bi-file-earmark-check me-2 text-muted" aria-hidden="true"></i>Revisão e Geração de Proposta</span>
+<div id="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <span class="topbar-title"><i class="bi bi-file-earmark-check me-2 text-muted"></i>Revisão e Geração de Proposta</span>
   </div>
-</header>
+</div>
 
 <main id="main">
   <div class="step-bar mb-4">
@@ -67,15 +68,15 @@
               </div>
             </div>
             <div class="text-end">
-              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalTruck,1,'POINT',2,'COMMA')}"></div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.truck.total,1,'POINT',2,'COMMA')}"></div>
             </div>
           </div>
           <hr style="margin: 10px 0;"/>
-          <div class="row g-1" style="font-size:.78rem;color:#6B7280;">
-            <div class="col-6">Frete base: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.freteBaseTruck,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Pedágio: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.pedagioTruck,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Descarga: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.descargarTruck,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Impostos: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.impostosTruck,1,'POINT',2,'COMMA')}"></strong></div>
+          <div class="row g-1" style="font-size:.78rem;color:var(--fa-muted);">
+            <div class="col-6">Frete base: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.truck.freteBase,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Pedágio: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.truck.pedagio,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Descarga: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.truck.custoDescarga,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Impostos: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.truck.impostos,1,'POINT',2,'COMMA')}"></strong></div>
           </div>
         </div>
       </div>
@@ -89,15 +90,15 @@
               </div>
             </div>
             <div class="text-end">
-              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalCarreta,1,'POINT',2,'COMMA')}"></div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.carreta.total,1,'POINT',2,'COMMA')}"></div>
             </div>
           </div>
           <hr style="margin: 10px 0;"/>
-          <div class="row g-1" style="font-size:.78rem;color:#6B7280;">
-            <div class="col-6">Frete base: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.freteBaseCarreta,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Pedágio: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.pedagioCarreta,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Descarga: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.descargarCarreta,1,'POINT',2,'COMMA')}"></strong></div>
-            <div class="col-6">Impostos: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.impostosCarreta,1,'POINT',2,'COMMA')}"></strong></div>
+          <div class="row g-1" style="font-size:.78rem;color:var(--fa-muted);">
+            <div class="col-6">Frete base: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.carreta.freteBase,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Pedágio: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.carreta.pedagio,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Descarga: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.carreta.custoDescarga,1,'POINT',2,'COMMA')}"></strong></div>
+            <div class="col-6">Impostos: <strong th:text="'R$ '+${#numbers.formatDecimal(frete.carreta.impostos,1,'POINT',2,'COMMA')}"></strong></div>
           </div>
         </div>
       </div>
@@ -111,7 +112,7 @@
         <input type="hidden" name="nomeCidade" th:value="${frete.cidadeDestino}"/>
         <input type="hidden" name="estado" th:value="${frete.estadoDestino}"/>
         <input type="hidden" name="clienteId" th:value="${pedido.cliente?.id ?: 0}"/>
-        <input type="hidden" name="valorMercadoria" value="0"/>
+        <input type="hidden" name="valorMercadoria" th:value="${frete.valorMercadoria}"/>
 
         <div class="row g-3 mb-3">
           <div class="col-md-4">
@@ -160,6 +161,5 @@ document.querySelector('form').addEventListener('submit', () => {
   document.getElementById('btnGerar').disabled = true;
 });
 </script>
-<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

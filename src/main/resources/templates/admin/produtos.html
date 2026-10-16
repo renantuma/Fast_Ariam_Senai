@@ -101,7 +101,7 @@
             </td>
             <td class="hide-mobile" style="font-size:.88rem;">
               <span th:if="${p.tipo.name() == 'LINHA_SECA'}"
-                    th:text="${p.fatorQtdM3 + ' pç/m³'}"></span>
+                    th:text="${p.pecasPorM3 + ' pç/m³'}"></span>
               <span th:if="${p.tipo.name() == 'REFRIGERADO'}"
                     th:text="${#numbers.formatDecimal(p.volumeUnitario,1,3)+' m³'}"></span>
             </td>
@@ -196,7 +196,7 @@
                 </div>
                 <div class="col-md-6">
                   <label class="form-label">Fator Qtd/m³ *</label>
-                  <input type="number" name="fatorQtdM3"
+                  <input type="number" name="pecasPorM3"
                          class="form-control" step="0.01" min="0.01"
                          placeholder="Peças por m³"/>
                 </div>

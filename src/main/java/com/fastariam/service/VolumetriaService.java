@@ -12,6 +12,11 @@ import java.util.stream.Collectors;
 public class VolumetriaService {
 
     private static final Logger log = Logger.getLogger(VolumetriaService.class.getName());
+
+    /** Margem de segurança NVIA aplicada sobre o comprimento ocupado (+10%). */
+    private static final double MARGEM_NVIA = 1.10;
+    /** Margem de venda aplicada sobre o comprimento ocupado (+20%). */
+    private static final double MARGEM_VENDA = 1.20;
     private final ConfiguracaoFreteRepository configuracaoRepo;
 
     public VolumetriaService(ConfiguracaoFreteRepository configuracaoRepo) {
@@ -20,8 +25,8 @@ public class VolumetriaService {
 
     public ResultadoVolumetriaDTO calcular(List<ItemPedido> itens) {
         ConfiguracaoFrete config = configuracaoRepo.getConfiguracao();
-        double capacidadeRef = (config != null) ? config.getCapacidadeCarretaM3() : 60.0;
-        double fatorMetros = (config != null) ? config.getFatorMetrosCarroceria() : 12.0;
+        double volumeReferencia = (config != null) ? config.getVolumeUtilCarretaM3() : 60.0;
+        double comprimentoReferencia = (config != null) ? config.getComprimentoCarroceriaCarretaM() : 12.0;
 
         List<ResultadoVolumetriaDTO.ItemVolumeDTO> itensSeca = new ArrayList<>();
         List<ResultadoVolumetriaDTO.ItemVolumeDTO> itensRefrig = new ArrayList<>();
@@ -52,12 +57,12 @@ public class VolumetriaService {
             double somaCategoria = 0.0;
             for (ItemPedido item : entry.getValue()) {
                 Produto p = item.getProduto();
-                double volItem = item.getQuantidade() / p.getFatorQtdM3();
+                double volItem = item.getQuantidade() / p.getPecasPorM3();
                 somaCategoria += volItem;
                 itensSeca.add(ResultadoVolumetriaDTO.ItemVolumeDTO.builder()
                         .codigo(p.getCodigo()).descricao(p.getDescricao())
                         .tipo(TipoProduto.LINHA_SECA).quantidade(item.getQuantidade())
-                        .volumeUnitario(1.0 / p.getFatorQtdM3()).volumeTotal(volItem)
+                        .volumeUnitario(1.0 / p.getPecasPorM3()).volumeTotal(volItem)
                         .fatorAjuste(cat.getFatorAjuste()).volumeAjustado(volItem * cat.getFatorAjuste())
                         .categoria(cat.getDescricao()).build());
             }
@@ -67,13 +72,15 @@ public class VolumetriaService {
         }
 
         double volumeTotal = volumeLinhaSeca + volumeRefrigerado;
-        double metros = volumeTotal * fatorMetros / capacidadeRef;
+        // m³ → metros lineares de carroceria, proporcional à carreta de referência.
+        double comprimentoOcupado = volumeTotal * comprimentoReferencia / volumeReferencia;
 
         log.info("Volumetria calculada: " + volumeTotal + " m3");
 
         return ResultadoVolumetriaDTO.builder()
-                .volumeTotalM3(r2(volumeTotal)).metrosCarroceria(r2(metros))
-                .metrosComMargemNvia(r2(metros * 1.10)).metrosComMargemVenda(r2(metros * 1.20))
+                .volumeTotalM3(r2(volumeTotal)).comprimentoOcupadoM(r2(comprimentoOcupado))
+                .comprimentoMargemNviaM(r2(comprimentoOcupado * MARGEM_NVIA))
+                .comprimentoMargemVendaM(r2(comprimentoOcupado * MARGEM_VENDA))
                 .veiculoSugerido(TipoVeiculo.sugerirPorVolume(volumeTotal))
                 .itensSeca(itensSeca).itensRefrigerado(itensRefrig)
                 .volumePorCategoria(volumePorCategoria).build();

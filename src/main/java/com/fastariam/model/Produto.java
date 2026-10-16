@@ -26,10 +26,18 @@ public class Produto {
     @Enumerated(EnumType.STRING)
     private CategoriaLinhaSeca categoria;
 
-    private Double fatorQtdM3;
+    /** Quantas peças cabem em 1 m³ (usado só na linha seca; volume = quantidade / pecasPorM3). */
+    @Column(name = "pecas_por_m3")
+    private Double pecasPorM3;
 
+    /** Dimensões em metros (usadas só nos refrigerados; volume = comprimento × largura × altura). */
+    @Column(name = "comprimento_m")
     private Double comprimento;
+
+    @Column(name = "largura_m")
     private Double largura;
+
+    @Column(name = "altura_m")
     private Double altura;
 
     private boolean ativo = true;
@@ -42,7 +50,7 @@ public class Produto {
         private String codigo, descricao, nomeAntigo;
         private TipoProduto tipo;
         private CategoriaLinhaSeca categoria;
-        private Double fatorQtdM3, comprimento, largura, altura;
+        private Double pecasPorM3, comprimento, largura, altura;
         private boolean ativo = true;
 
         public Builder codigo(String v) { this.codigo = v; return this; }
@@ -50,7 +58,7 @@ public class Produto {
         public Builder nomeAntigo(String v) { this.nomeAntigo = v; return this; }
         public Builder tipo(TipoProduto v) { this.tipo = v; return this; }
         public Builder categoria(CategoriaLinhaSeca v) { this.categoria = v; return this; }
-        public Builder fatorQtdM3(Double v) { this.fatorQtdM3 = v; return this; }
+        public Builder pecasPorM3(Double v) { this.pecasPorM3 = v; return this; }
         public Builder comprimento(Double v) { this.comprimento = v; return this; }
         public Builder largura(Double v) { this.largura = v; return this; }
         public Builder altura(Double v) { this.altura = v; return this; }
@@ -59,7 +67,7 @@ public class Produto {
         public Produto build() {
             Produto p = new Produto();
             p.codigo = codigo; p.descricao = descricao; p.nomeAntigo = nomeAntigo;
-            p.tipo = tipo; p.categoria = categoria; p.fatorQtdM3 = fatorQtdM3;
+            p.tipo = tipo; p.categoria = categoria; p.pecasPorM3 = pecasPorM3;
             p.comprimento = comprimento; p.largura = largura; p.altura = altura;
             p.ativo = ativo;
             return p;
@@ -84,8 +92,8 @@ public class Produto {
     public void setTipo(TipoProduto v) { this.tipo = v; }
     public CategoriaLinhaSeca getCategoria() { return categoria; }
     public void setCategoria(CategoriaLinhaSeca v) { this.categoria = v; }
-    public Double getFatorQtdM3() { return fatorQtdM3; }
-    public void setFatorQtdM3(Double v) { this.fatorQtdM3 = v; }
+    public Double getPecasPorM3() { return pecasPorM3; }
+    public void setPecasPorM3(Double v) { this.pecasPorM3 = v; }
     public Double getComprimento() { return comprimento; }
     public void setComprimento(Double v) { this.comprimento = v; }
     public Double getLargura() { return largura; }

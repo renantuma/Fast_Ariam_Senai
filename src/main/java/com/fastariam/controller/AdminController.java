@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fastariam.dto.CidadeTarifaView;
 import com.fastariam.service.FreteService;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,7 +101,7 @@ public class AdminController {
                                  @RequestParam(required = false) String nomeAntigo,
                                  @RequestParam String tipo,
                                  @RequestParam(required = false) String categoria,
-                                 @RequestParam(required = false) Double fatorQtdM3,
+                                 @RequestParam(required = false) Double pecasPorM3,
                                  @RequestParam(required = false) Double comprimento,
                                  @RequestParam(required = false) Double largura,
                                  @RequestParam(required = false) Double altura,
@@ -117,7 +118,7 @@ public class AdminController {
         p.setNomeAntigo(nomeAntigo);
         p.setTipo(TipoProduto.valueOf(tipo));
         if (categoria != null && !categoria.isBlank()) p.setCategoria(CategoriaLinhaSeca.valueOf(categoria));
-        p.setFatorQtdM3(fatorQtdM3);
+        p.setPecasPorM3(pecasPorM3);
         p.setComprimento(comprimento);
         p.setLargura(largura);
         p.setAltura(altura);
@@ -160,10 +161,10 @@ public class AdminController {
                                 @RequestParam String nome,
                                 @RequestParam String estado,
                                 @RequestParam double distanciaKm,
-                                @RequestParam double freteBaseKmTruck,
-                                @RequestParam double freteBaseKmCarreta,
-                                @RequestParam double pedagioTruck,
-                                @RequestParam double pedagioCarreta,
+                                @RequestParam BigDecimal valorPorKmTruck,
+                                @RequestParam BigDecimal valorPorKmCarreta,
+                                @RequestParam BigDecimal pedagioTruck,
+                                @RequestParam BigDecimal pedagioCarreta,
                                 RedirectAttributes ra) {
         // ICMS não é mais recebido: é derivado do estado em tempo de cálculo.
         Cidade cidade = (id != null)
@@ -177,11 +178,11 @@ public class AdminController {
         TarifaFrete tarifa = tarifaRepo.findByCidade(cidade).orElseGet(TarifaFrete::new);
         tarifa.setCidade(cidade);
         tarifa.setDistanciaKm(distanciaKm);
-        tarifa.setFreteBaseKmTruck(freteBaseKmTruck);
-        tarifa.setFreteBaseKmCarreta(freteBaseKmCarreta);
+        tarifa.setValorPorKmTruck(valorPorKmTruck);
+        tarifa.setValorPorKmCarreta(valorPorKmCarreta);
         tarifa.setPedagioTruck(pedagioTruck);
         tarifa.setPedagioCarreta(pedagioCarreta);
-        tarifa.setOrigemApi(false);
+        tarifa.setGeradaViaApi(false);
         tarifaRepo.save(tarifa);
 
         ra.addFlashAttribute("sucesso", "Cidade salva com sucesso!");
@@ -243,13 +244,13 @@ public class AdminController {
 
     @PostMapping("/configuracao/salvar")
     public String salvarConfiguracao(@RequestParam(required = false) Long id,
-                                      @RequestParam double descargarEmpilhadeira,
-                                      @RequestParam double descargarManualTruck,
-                                      @RequestParam double descargarManualCarreta,
-                                      @RequestParam double pisCofinsPercent,
-                                      @RequestParam double margemComercialPercent,
-                                      @RequestParam double adValoremDefault,
-                                      @RequestParam double capacidadeCarretaM3,
+                                      @RequestParam BigDecimal custoDescargaEmpilhadeira,
+                                      @RequestParam BigDecimal custoDescargaManualTruck,
+                                      @RequestParam BigDecimal custoDescargaManualCarreta,
+                                      @RequestParam BigDecimal pisCofinsPercent,
+                                      @RequestParam BigDecimal margemComercialPercent,
+                                      @RequestParam BigDecimal adValoremPercent,
+                                      @RequestParam double volumeUtilCarretaM3,
                                       RedirectAttributes ra) {
         ConfiguracaoFrete c;
         if (id != null) {
@@ -258,13 +259,13 @@ public class AdminController {
             c = configRepo.getConfiguracao();
             if (c == null) c = new ConfiguracaoFrete();
         }
-        c.setDescargarEmpilhadeira(descargarEmpilhadeira);
-        c.setDescargarManualTruck(descargarManualTruck);
-        c.setDescargarManualCarreta(descargarManualCarreta);
+        c.setCustoDescargaEmpilhadeira(custoDescargaEmpilhadeira);
+        c.setCustoDescargaManualTruck(custoDescargaManualTruck);
+        c.setCustoDescargaManualCarreta(custoDescargaManualCarreta);
         c.setPisCofinsPercent(pisCofinsPercent);
         c.setMargemComercialPercent(margemComercialPercent);
-        c.setAdValoremDefault(adValoremDefault);
-        c.setCapacidadeCarretaM3(capacidadeCarretaM3);
+        c.setAdValoremPercent(adValoremPercent);
+        c.setVolumeUtilCarretaM3(volumeUtilCarretaM3);
         configRepo.save(c);
         ra.addFlashAttribute("sucesso", "Configuração salva com sucesso!");
         return "redirect:/admin/configuracao";

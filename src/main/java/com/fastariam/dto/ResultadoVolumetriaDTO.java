@@ -8,9 +8,9 @@ import java.util.Map;
 public class ResultadoVolumetriaDTO {
 
     private double volumeTotalM3;
-    private double metrosCarroceria;
-    private double metrosComMargemNvia;
-    private double metrosComMargemVenda;
+    private double comprimentoOcupadoM;
+    private double comprimentoMargemNviaM;
+    private double comprimentoMargemVendaM;
     private TipoVeiculo veiculoSugerido;
     private List<ItemVolumeDTO> itensSeca;
     private List<ItemVolumeDTO> itensRefrigerado;
@@ -21,15 +21,15 @@ public class ResultadoVolumetriaDTO {
     public static Builder builder() { return new Builder(); }
 
     public static class Builder {
-        private double volumeTotalM3, metrosCarroceria, metrosComMargemNvia, metrosComMargemVenda;
+        private double volumeTotalM3, comprimentoOcupadoM, comprimentoMargemNviaM, comprimentoMargemVendaM;
         private TipoVeiculo veiculoSugerido;
         private List<ItemVolumeDTO> itensSeca, itensRefrigerado;
         private Map<String, Double> volumePorCategoria;
 
         public Builder volumeTotalM3(double v) { this.volumeTotalM3 = v; return this; }
-        public Builder metrosCarroceria(double v) { this.metrosCarroceria = v; return this; }
-        public Builder metrosComMargemNvia(double v) { this.metrosComMargemNvia = v; return this; }
-        public Builder metrosComMargemVenda(double v) { this.metrosComMargemVenda = v; return this; }
+        public Builder comprimentoOcupadoM(double v) { this.comprimentoOcupadoM = v; return this; }
+        public Builder comprimentoMargemNviaM(double v) { this.comprimentoMargemNviaM = v; return this; }
+        public Builder comprimentoMargemVendaM(double v) { this.comprimentoMargemVendaM = v; return this; }
         public Builder veiculoSugerido(TipoVeiculo v) { this.veiculoSugerido = v; return this; }
         public Builder itensSeca(List<ItemVolumeDTO> v) { this.itensSeca = v; return this; }
         public Builder itensRefrigerado(List<ItemVolumeDTO> v) { this.itensRefrigerado = v; return this; }
@@ -37,8 +37,8 @@ public class ResultadoVolumetriaDTO {
 
         public ResultadoVolumetriaDTO build() {
             ResultadoVolumetriaDTO d = new ResultadoVolumetriaDTO();
-            d.volumeTotalM3 = volumeTotalM3; d.metrosCarroceria = metrosCarroceria;
-            d.metrosComMargemNvia = metrosComMargemNvia; d.metrosComMargemVenda = metrosComMargemVenda;
+            d.volumeTotalM3 = volumeTotalM3; d.comprimentoOcupadoM = comprimentoOcupadoM;
+            d.comprimentoMargemNviaM = comprimentoMargemNviaM; d.comprimentoMargemVendaM = comprimentoMargemVendaM;
             d.veiculoSugerido = veiculoSugerido; d.itensSeca = itensSeca;
             d.itensRefrigerado = itensRefrigerado; d.volumePorCategoria = volumePorCategoria;
             return d;
@@ -46,9 +46,9 @@ public class ResultadoVolumetriaDTO {
     }
 
     public double getVolumeTotalM3() { return volumeTotalM3; }
-    public double getMetrosCarroceria() { return metrosCarroceria; }
-    public double getMetrosComMargemNvia() { return metrosComMargemNvia; }
-    public double getMetrosComMargemVenda() { return metrosComMargemVenda; }
+    public double getComprimentoOcupadoM() { return comprimentoOcupadoM; }
+    public double getComprimentoMargemNviaM() { return comprimentoMargemNviaM; }
+    public double getComprimentoMargemVendaM() { return comprimentoMargemVendaM; }
     public TipoVeiculo getVeiculoSugerido() { return veiculoSugerido; }
     public List<ItemVolumeDTO> getItensSeca() { return itensSeca; }
     public List<ItemVolumeDTO> getItensRefrigerado() { return itensRefrigerado; }

@@ -4,38 +4,27 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Fast Ariam</title>
 </head>
+
+
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div th:replace="~{fragments/layout :: overlay}"></div>
-<header id="topbar">
-  <div class="d-flex align-items-center gap-2" style="min-width:0;">
-    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
-      <i class="bi bi-list" aria-hidden="true"></i>
-    </button>
-    <span class="topbar-title text-truncate"><i class="bi bi-pencil-square me-2 text-muted" aria-hidden="true"></i>Revisar Itens do Pedido</span>
+<div id="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <span class="topbar-title"><i class="bi bi-pencil-square me-2 text-muted"></i>Revisar Itens do Pedido</span>
   </div>
-</header>
+</div>
 
 <main id="main">
   <div class="step-bar mb-4">
-    <div class="step-item" th:classappend="${entradaManual} ? 'active' : 'done'">
-      <div class="step-num">
-        <i th:unless="${entradaManual}" class="bi bi-check" style="font-size:.8rem;"></i>
-        <span th:if="${entradaManual}">1</span>
-      </div>
-      <div class="step-label">Upload PDF</div>
-    </div>
-    <div class="step-item" th:classappend="${entradaManual} ? '' : 'active'">
-      <div class="step-num">2</div><div class="step-label">Revisar Itens</div>
-    </div>
+    <div class="step-item done"><div class="step-num"><i class="bi bi-check" style="font-size:.8rem;"></i></div><div class="step-label">Upload PDF</div></div>
+    <div class="step-item active"><div class="step-num">2</div><div class="step-label">Revisar Itens</div></div>
     <div class="step-item"><div class="step-num">3</div><div class="step-label">Volumetria</div></div>
     <div class="step-item"><div class="step-num">4</div><div class="step-label">Frete</div></div>
     <div class="step-item"><div class="step-num">5</div><div class="step-label">Proposta</div></div>
-  </div>
-
-  <div th:if="${entradaManual}" class="fa-alert alert alert-info d-flex align-items-center gap-2 mb-3">
-    <i class="bi bi-pencil-square"></i>
-    <span>Entrada manual — adicione os itens e selecione o produto correspondente no catálogo.</span>
   </div>
 
   <div th:if="${nomeArquivo}" class="fa-alert alert alert-info d-flex align-items-center gap-2 mb-3">
@@ -43,11 +32,16 @@
     <span>PDF lido: <strong th:text="${nomeArquivo}"></strong></span>
   </div>
 
+  <div th:if="${erro}" class="alert alert-warning fa-alert d-flex align-items-center gap-2 mb-3" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    <span th:text="${erro}"></span>
+  </div>
+
   <form th:action="@{/pedidos/calcular-volumetria}" method="post" id="formItens">
     <div class="fa-card mb-3">
       <div class="fa-card-header">
         <div>
-          <span class="fa-card-title" th:text="${entradaManual} ? 'Itens do Pedido' : 'Itens Identificados'">Itens do Pedido</span>
+          <span class="fa-card-title">Itens Identificados</span>
           <div class="text-muted" style="font-size:.8rem;" id="countInfo">Carregando...</div>
         </div>
         <div class="d-flex gap-2">
@@ -194,6 +188,5 @@ function bindSelects() {
 bindSelects();
 updateCount();
 </script>
-<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

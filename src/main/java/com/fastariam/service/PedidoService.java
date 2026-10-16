@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,9 +85,9 @@ public class PedidoService {
 
         ResultadoVolumetriaDTO vol = volumetriaService.calcular(pedido.getItens());
         pedido.setVolumeTotalM3(vol.getVolumeTotalM3());
-        pedido.setMetrosCarroceria(vol.getMetrosCarroceria());
-        pedido.setMetrosComMargemNvia(vol.getMetrosComMargemNvia());
-        pedido.setMetrosComMargemVenda(vol.getMetrosComMargemVenda());
+        pedido.setComprimentoOcupadoM(vol.getComprimentoOcupadoM());
+        pedido.setComprimentoMargemNviaM(vol.getComprimentoMargemNviaM());
+        pedido.setComprimentoMargemVendaM(vol.getComprimentoMargemVendaM());
         pedido.setVeiculoSugerido(vol.getVeiculoSugerido());
 
         atualizarVolumeItens(pedido.getItens(), vol);
@@ -95,7 +96,7 @@ public class PedidoService {
     }
 
     public ResultadoFreteDTO calcularFrete(Long pedidoId, String nomeCidade, String estado,
-                                            Long clienteId, double valorMercadoria) {
+                                            Long clienteId, BigDecimal valorMercadoria) {
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
 
@@ -117,7 +118,7 @@ public class PedidoService {
     }
 
     public String gerarProposta(Long pedidoId, ResultadoFreteDTO frete, TipoVeiculo veiculoEscolhido,
-                                 double ajusteManual, String justificativa, Usuario usuario) throws IOException {
+                                 BigDecimal ajusteManual, String justificativa, Usuario usuario) throws IOException {
 
         Pedido pedido = pedidoRepo.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
@@ -127,26 +128,22 @@ public class PedidoService {
 
         Proposta proposta = Proposta.builder()
                 .pedido(pedido)
-                .freteBaseTruck(frete.getFreteBaseTruck())
-                .freteBaseCarreta(frete.getFreteBaseCarreta())
-                .pedagioTruck(frete.getPedagioTruck())
-                .pedagioCarreta(frete.getPedagioCarreta())
-                .descargarManualTruck(frete.getDescargarTruck())
-                .descargarManualCarreta(frete.getDescargarCarreta())
-                .adValorem(frete.getAdValoremTruck())
+                .valorMercadoria(frete.getValorMercadoria())
                 .icmsPercent(frete.getIcmsPercent())
                 .pisCofinsPercent(frete.getPisCofinsPercent())
-                .margemComercial(frete.getMargemComercialPercent())
-                .totalFreteTruck(frete.getTotalTruck())
-                .totalFreteCarreta(frete.getTotalCarreta())
+                .margemComercialPercent(frete.getMargemComercialPercent())
+                .adValoremPercent(frete.getAdValoremPercent())
                 .veiculoEscolhido(veiculoEscolhido)
-                .freteTotal(veiculoEscolhido == TipoVeiculo.CARRETA
-                        ? frete.getTotalCarreta() : frete.getTotalTruck())
+                .freteTotal(frete.opcaoPara(veiculoEscolhido).getTotal())
                 .ajusteManual(ajusteManual)
                 .justificativaAjuste(justificativa)
                 .geradaEm(LocalDateTime.now())
                 .geradaPor(usuario)
                 .build();
+
+        // Uma linha por veículo precificado (hoje Truck e Carreta).
+        frete.getOpcoes().forEach((tipo, opcao) ->
+                proposta.adicionarOpcao(PropostaOpcao.de(tipo, opcao)));
 
         propostaRepo.save(proposta);
         pedidoRepo.save(pedido);
@@ -192,11 +189,11 @@ public class PedidoService {
 
             vol.getItensRefrigerado().stream()
                     .filter(i -> cod.equals(i.getCodigo())).findFirst()
-                    .ifPresent(i -> item.setVolumeM3(i.getVolumeAjustado()));
+                    .ifPresent(i -> item.setVolumeAjustadoM3(i.getVolumeAjustado()));
 
             vol.getItensSeca().stream()
                     .filter(i -> cod.equals(i.getCodigo())).findFirst()
-                    .ifPresent(i -> item.setVolumeM3(i.getVolumeAjustado()));
+                    .ifPresent(i -> item.setVolumeAjustadoM3(i.getVolumeAjustado()));
         }
     }
 }

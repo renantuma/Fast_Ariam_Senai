@@ -1,9 +1,12 @@
 package com.fastariam.service;
 
+import com.fastariam.dto.OpcaoFreteDTO;
 import com.fastariam.dto.ResultadoFreteDTO;
 import com.fastariam.model.*;
 import com.fastariam.repository.*;
+import com.fastariam.util.Dinheiro;
 import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -36,8 +39,19 @@ public class FreteService {
         Map.entry("PR", 18.0)
     );
 
+    /**
+     * Calcula o frete (Truck e Carreta) para a rota, mercadoria e cliente informados.
+     *
+     * <p>Fórmula, para cada veículo:
+     * {@code subtotal = freteBase + pedágio + descarga + adValorem};
+     * {@code impostos = subtotal × (ICMS + PIS/COFINS)};
+     * {@code margem = (subtotal + impostos) × margemComercial};
+     * {@code total = subtotal + impostos + margem}.
+     * As contas usam {@link BigDecimal} com precisão alta e só arredondam
+     * (para centavos) ao montar o resultado.</p>
+     */
     public ResultadoFreteDTO calcular(String nomeCidade, String estado,
-                                       double valorMercadoria, double fatorDescargaCliente,
+                                       BigDecimal valorMercadoria, double fatorDescargaCliente,
                                        double volumeTotal) {
         // Busca a tarifa da rota; se não existir, gera via API de roteirização.
         TarifaFrete tarifa = tarifaRepo.buscarPorCidade(nomeCidade, estado).orElse(null);
@@ -52,46 +66,52 @@ public class FreteService {
         if (config == null) throw new IllegalStateException("Configuração de frete não encontrada.");
 
         // ICMS é derivado do estado (regra fiscal), não armazenado por cidade.
-        double icms = getIcmsEstado(estado);
-        double pisCofins = config.getPisCofinsPercent();
-        double margemComercial = config.getMargemComercialPercent();
+        BigDecimal icmsPercent = BigDecimal.valueOf(getIcmsEstado(estado));
+        BigDecimal pisCofinsPercent = config.getPisCofinsPercent();
+        BigDecimal margemPercent = config.getMargemComercialPercent();
 
-        // Frete-base agora é responsabilidade da própria tarifa (modelo rico).
-        double freteBaseTruck = tarifa.freteBaseTruck();
-        double freteBaseCarreta = tarifa.freteBaseCarreta();
+        BigDecimal fatorImpostos = Dinheiro.fator(icmsPercent.add(pisCofinsPercent));
+        BigDecimal fatorMargem = Dinheiro.fator(margemPercent);
+        BigDecimal adValorem = valorMercadoria.multiply(Dinheiro.fator(config.getAdValoremPercent()));
+        BigDecimal fatorDescarga = BigDecimal.valueOf(fatorDescargaCliente);
 
-        double adValorem = valorMercadoria * (config.getAdValoremDefault() / 100.0);
-        double descargarTruck = config.getDescargarManualTruck() * fatorDescargaCliente;
-        double descargarCarreta = config.getDescargarManualCarreta() * fatorDescargaCliente;
-        double pctImpostos = (icms + pisCofins) / 100.0;
+        OpcaoFreteDTO truck = calcularOpcao(
+                tarifa.freteBaseTruck(), tarifa.getPedagioTruck(),
+                config.getCustoDescargaManualTruck().multiply(fatorDescarga),
+                adValorem, fatorImpostos, fatorMargem);
 
-        double subtotalTruck = freteBaseTruck + tarifa.getPedagioTruck() + descargarTruck + adValorem;
-        double impostosTruck = subtotalTruck * pctImpostos;
-        double comImpostosTruck = subtotalTruck + impostosTruck;
-        double margemTruck = comImpostosTruck * (margemComercial / 100.0);
-        double totalTruck = comImpostosTruck + margemTruck;
-
-        double subtotalCarreta = freteBaseCarreta + tarifa.getPedagioCarreta() + descargarCarreta + adValorem;
-        double impostosCarreta = subtotalCarreta * pctImpostos;
-        double comImpostosCarreta = subtotalCarreta + impostosCarreta;
-        double margemCarreta = comImpostosCarreta * (margemComercial / 100.0);
-        double totalCarreta = comImpostosCarreta + margemCarreta;
+        OpcaoFreteDTO carreta = calcularOpcao(
+                tarifa.freteBaseCarreta(), tarifa.getPedagioCarreta(),
+                config.getCustoDescargaManualCarreta().multiply(fatorDescarga),
+                adValorem, fatorImpostos, fatorMargem);
 
         return ResultadoFreteDTO.builder()
                 .cidadeDestino(nomeCidade).estadoDestino(estado)
                 .distanciaKm(tarifa.getDistanciaKm())
-                .freteBaseTruck(r2(freteBaseTruck)).pedagioTruck(r2(tarifa.getPedagioTruck()))
-                .descargarTruck(r2(descargarTruck)).adValoremTruck(r2(adValorem))
-                .impostosTruck(r2(impostosTruck)).subtotalTruck(r2(subtotalTruck))
-                .margemTruck(r2(margemTruck)).totalTruck(r2(totalTruck))
-                .freteBaseCarreta(r2(freteBaseCarreta)).pedagioCarreta(r2(tarifa.getPedagioCarreta()))
-                .descargarCarreta(r2(descargarCarreta)).adValoremCarreta(r2(adValorem))
-                .impostosCarreta(r2(impostosCarreta)).subtotalCarreta(r2(subtotalCarreta))
-                .margemCarreta(r2(margemCarreta)).totalCarreta(r2(totalCarreta))
-                .icmsPercent(icms).pisCofinsPercent(pisCofins)
-                .margemComercialPercent(margemComercial).fatorDescargaCliente(fatorDescargaCliente)
+                .valorMercadoria(Dinheiro.arredondar(valorMercadoria))
+                .truck(truck).carreta(carreta)
+                .icmsPercent(icmsPercent).pisCofinsPercent(pisCofinsPercent)
+                .margemComercialPercent(margemPercent).adValoremPercent(config.getAdValoremPercent())
+                .fatorDescargaCliente(fatorDescargaCliente)
                 .veiculoRecomendado(TipoVeiculo.sugerirPorVolume(volumeTotal))
-                .cidadeViaApi(viaApi || tarifa.isOrigemApi()).build();
+                .tarifaGeradaViaApi(viaApi || tarifa.isGeradaViaApi())
+                .build();
+    }
+
+    /** Monta o resultado de um veículo. Recebe valores sem arredondar e devolve em centavos. */
+    private OpcaoFreteDTO calcularOpcao(BigDecimal freteBase, BigDecimal pedagio, BigDecimal custoDescarga,
+                                         BigDecimal adValorem, BigDecimal fatorImpostos, BigDecimal fatorMargem) {
+        BigDecimal subtotal = freteBase.add(pedagio).add(custoDescarga).add(adValorem);
+        BigDecimal impostos = subtotal.multiply(fatorImpostos);
+        BigDecimal comImpostos = subtotal.add(impostos);
+        BigDecimal margem = comImpostos.multiply(fatorMargem);
+        BigDecimal total = comImpostos.add(margem);
+
+        return new OpcaoFreteDTO(
+                Dinheiro.arredondar(freteBase), Dinheiro.arredondar(pedagio),
+                Dinheiro.arredondar(custoDescarga), Dinheiro.arredondar(adValorem),
+                Dinheiro.arredondar(subtotal), Dinheiro.arredondar(impostos),
+                Dinheiro.arredondar(margem), Dinheiro.arredondar(total));
     }
 
     /** Alíquota de ICMS conforme o estado de destino (regra fiscal centralizada). */
@@ -99,5 +119,4 @@ public class FreteService {
         return ICMS_ESTADO.getOrDefault(estado.toUpperCase(), 7.0);
     }
 
-    private double r2(double v) { return Math.round(v * 100.0) / 100.0; }
 }

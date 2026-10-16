@@ -4,35 +4,35 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Fast Ariam</title>
 </head>
+
+
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div th:replace="~{fragments/layout :: overlay}"></div>
-<header id="topbar">
-  <div class="d-flex align-items-center gap-2" style="min-width:0;">
-    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
-      <i class="bi bi-list" aria-hidden="true"></i>
-    </button>
-    <span class="topbar-title text-truncate">
-      <a th:href="@{/pedidos}" class="text-muted text-decoration-none">Pedidos</a>
-      <i class="bi bi-chevron-right mx-1 text-muted" style="font-size:.75rem;" aria-hidden="true"></i>
-      Pedido #<span th:text="${pedido.id}"></span>
-    </span>
-  </div>
-  <div class="topbar-actions">
+<div id="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <span class="topbar-title">
+    <a th:href="@{/pedidos}" class="text-muted text-decoration-none">Pedidos</a>
+    <i class="bi bi-chevron-right mx-2 text-muted" style="font-size:.75rem;"></i>
+    Pedido #<span th:text="${pedido.id}"></span>
+  </span>
+  <div class="d-flex gap-2">
     <a th:if="${pedido.status.name() == 'PROPOSTA_GERADA'}"
        th:href="@{/pedidos/{id}/download-proposta(id=${pedido.id})}"
-       class="btn-fa">
-      <i class="bi bi-download" aria-hidden="true"></i>
-      <span class="btn-label">Baixar Proposta</span>
+       class="btn-fa btn d-inline-flex align-items-center gap-2">
+      <i class="bi bi-download"></i> Baixar Proposta
     </a>
     <a th:unless="${pedido.status.name() == 'PROPOSTA_GERADA' or pedido.status.name() == 'FINALIZADO'}"
        th:href="@{/pedidos/{id}/frete(id=${pedido.id})}"
-       class="btn-fa-orange">
-      <i class="bi bi-arrow-right-circle" aria-hidden="true"></i>
-      <span class="btn-label">Continuar</span>
+       class="btn-fa-orange btn d-inline-flex align-items-center gap-2">
+      <i class="bi bi-arrow-right-circle"></i> Continuar
     </a>
   </div>
-</header>
+  </div>
+</div>
 
 <main id="main">
   <div class="row g-4">
@@ -77,15 +77,15 @@
         <div style="font-size:.82rem;">
           <div class="d-flex justify-content-between mb-1">
             <span style="opacity:.75;">Metros carroceria</span>
-            <span th:text="${#numbers.formatDecimal(pedido.metrosCarroceria,1,2)+' m'}"></span>
+            <span th:text="${#numbers.formatDecimal(pedido.comprimentoOcupadoM,1,2)+' m'}"></span>
           </div>
           <div class="d-flex justify-content-between mb-1">
             <span style="opacity:.75;">+10% NVIA</span>
-            <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemNvia,1,2)+' m'}"></span>
+            <span th:text="${#numbers.formatDecimal(pedido.comprimentoMargemNviaM,1,2)+' m'}"></span>
           </div>
           <div class="d-flex justify-content-between">
             <span style="opacity:.75;">+20% Venda</span>
-            <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemVenda,1,2)+' m'}"></span>
+            <span th:text="${#numbers.formatDecimal(pedido.comprimentoMargemVendaM,1,2)+' m'}"></span>
           </div>
         </div>
         <hr style="border-color:rgba(255,255,255,.2);margin:12px 0;"/>
@@ -137,11 +137,11 @@
                   <span th:if="${item.produto != null and item.produto.tipo.name() == 'REFRIGERADO'}"
                         th:text="${#numbers.formatDecimal(item.produto.volumeUnitario,1,3)}"></span>
                   <span th:if="${item.produto != null and item.produto.tipo.name() == 'LINHA_SECA'}"
-                        th:text="${#numbers.formatDecimal(1.0/item.produto.fatorQtdM3,1,3)}"></span>
+                        th:text="${#numbers.formatDecimal(1.0/item.produto.pecasPorM3,1,3)}"></span>
                   <span th:if="${item.produto == null}" class="text-muted">—</span>
                 </td>
                 <td>
-                  <strong th:text="${#numbers.formatDecimal(item.volumeM3,1,3)}"></strong>
+                  <strong th:text="${#numbers.formatDecimal(item.volumeAjustadoM3,1,3)}"></strong>
                 </td>
               </tr>
             </tbody>
@@ -162,6 +162,5 @@
     </div>
   </div>
 </main>
-<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

@@ -28,7 +28,6 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**","/js/**","/img/**","/favicon.ico").permitAll()
-                .requestMatchers("/h2-console/**").hasRole("ADMINISTRADOR")
                 .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
                 .anyRequest().authenticated()
             )
@@ -39,7 +38,6 @@ public class SecurityConfig {
             .logout(logout -> logout.logoutSuccessUrl("/login?logout=true").permitAll())
             .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, denied) ->
                     response.sendRedirect(request.getContextPath() + "/dashboard?semAcesso")))
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
             .headers(h -> h.frameOptions(fo -> fo.sameOrigin()));
         return http.build();
     }

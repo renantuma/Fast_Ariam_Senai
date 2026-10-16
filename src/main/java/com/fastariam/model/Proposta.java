@@ -1,8 +1,24 @@
 package com.fastariam.model;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Proposta de frete gerada para um pedido.
+ *
+ * <p>Guarda só o que é comum à proposta inteira (pedido, valor da mercadoria,
+ * alíquotas usadas, veículo escolhido, ajuste e PDF). Os valores calculados
+ * para cada veículo ficam em {@link PropostaOpcao}: uma linha por veículo, em
+ * vez de uma coluna por veículo. Assim, incluir um novo tipo de veículo não
+ * exige alterar a estrutura da tabela.</p>
+ *
+ * <p>As alíquotas ({@code icmsPercent}, {@code pisCofinsPercent}, ...) são uma
+ * cópia dos valores vigentes no momento da emissão, para que a proposta não mude
+ * se a configuração global for alterada depois.</p>
+ */
 @Entity
 @Table(name = "propostas")
 public class Proposta {
@@ -12,40 +28,55 @@ public class Proposta {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "pedido_id", nullable = false)
+    @JoinColumn(name = "pedido_id", nullable = false, unique = true)
     private Pedido pedido;
 
-    private double freteBaseTruck;
-    private double freteBaseCarreta;
-    private double pedagioTruck;
-    private double pedagioCarreta;
-    private double descargarManualTruck;
-    private double descargarManualCarreta;
-    private double adValorem;
-    private double valorMercadoria;
-    private double icmsPercent;
-    private double pisCofinsPercent = 9.25;
-    private double margemComercial = 20.0;
-    private double totalFreteTruck;
-    private double totalFreteCarreta;
+    // ---- Dados usados no cálculo (cópia do momento da emissão) ----
+    @Column(name = "valor_mercadoria", nullable = false, precision = 14, scale = 2)
+    private BigDecimal valorMercadoria = BigDecimal.ZERO;
 
+    @Column(name = "icms_percent", nullable = false, precision = 5, scale = 2)
+    private BigDecimal icmsPercent = BigDecimal.ZERO;
+
+    @Column(name = "pis_cofins_percent", nullable = false, precision = 5, scale = 2)
+    private BigDecimal pisCofinsPercent = new BigDecimal("9.25");
+
+    @Column(name = "margem_comercial_percent", nullable = false, precision = 5, scale = 2)
+    private BigDecimal margemComercialPercent = new BigDecimal("20.00");
+
+    @Column(name = "ad_valorem_percent", nullable = false, precision = 5, scale = 2)
+    private BigDecimal adValoremPercent = BigDecimal.ZERO;
+
+    // ---- Resultado ----
     @Enumerated(EnumType.STRING)
+    @Column(name = "veiculo_escolhido", length = 20)
     private TipoVeiculo veiculoEscolhido;
 
-    private double freteTotal;
-    private double ajusteManual;
+    /** Valor do frete do veículo escolhido (sem o ajuste manual). */
+    @Column(name = "frete_total", nullable = false, precision = 12, scale = 2)
+    private BigDecimal freteTotal = BigDecimal.ZERO;
 
-    @Column(length = 300)
+    @Column(name = "ajuste_manual", nullable = false, precision = 12, scale = 2)
+    private BigDecimal ajusteManual = BigDecimal.ZERO;
+
+    @Column(name = "justificativa_ajuste", length = 300)
     private String justificativaAjuste;
 
-    @Column(length = 300)
-    private String arquivoPdf;
+    /** Caminho do PDF da proposta no disco. */
+    @Column(name = "caminho_pdf", length = 300)
+    private String caminhoPdf;
 
+    @Column(name = "gerada_em", nullable = false)
     private LocalDateTime geradaEm = LocalDateTime.now();
 
     @ManyToOne
-    @JoinColumn(name = "gerada_por")
+    @JoinColumn(name = "gerada_por_id")
     private Usuario geradaPor;
+
+    /** Valores calculados por veículo (uma linha por veículo). */
+    @OneToMany(mappedBy = "proposta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private List<PropostaOpcao> opcoes = new ArrayList<>();
 
     public Proposta() {}
 
@@ -53,95 +84,83 @@ public class Proposta {
 
     public static class Builder {
         private Pedido pedido;
-        private double freteBaseTruck, freteBaseCarreta, pedagioTruck, pedagioCarreta;
-        private double descargarManualTruck, descargarManualCarreta, adValorem, valorMercadoria;
-        private double icmsPercent, pisCofinsPercent = 9.25, margemComercial = 20.0;
-        private double totalFreteTruck, totalFreteCarreta, freteTotal, ajusteManual;
+        private BigDecimal valorMercadoria = BigDecimal.ZERO;
+        private BigDecimal icmsPercent = BigDecimal.ZERO;
+        private BigDecimal pisCofinsPercent = new BigDecimal("9.25");
+        private BigDecimal margemComercialPercent = new BigDecimal("20.00");
+        private BigDecimal adValoremPercent = BigDecimal.ZERO;
         private TipoVeiculo veiculoEscolhido;
-        private String justificativaAjuste, arquivoPdf;
+        private BigDecimal freteTotal = BigDecimal.ZERO;
+        private BigDecimal ajusteManual = BigDecimal.ZERO;
+        private String justificativaAjuste, caminhoPdf;
         private LocalDateTime geradaEm;
         private Usuario geradaPor;
 
         public Builder pedido(Pedido v) { this.pedido = v; return this; }
-        public Builder freteBaseTruck(double v) { this.freteBaseTruck = v; return this; }
-        public Builder freteBaseCarreta(double v) { this.freteBaseCarreta = v; return this; }
-        public Builder pedagioTruck(double v) { this.pedagioTruck = v; return this; }
-        public Builder pedagioCarreta(double v) { this.pedagioCarreta = v; return this; }
-        public Builder descargarManualTruck(double v) { this.descargarManualTruck = v; return this; }
-        public Builder descargarManualCarreta(double v) { this.descargarManualCarreta = v; return this; }
-        public Builder adValorem(double v) { this.adValorem = v; return this; }
-        public Builder valorMercadoria(double v) { this.valorMercadoria = v; return this; }
-        public Builder icmsPercent(double v) { this.icmsPercent = v; return this; }
-        public Builder pisCofinsPercent(double v) { this.pisCofinsPercent = v; return this; }
-        public Builder margemComercial(double v) { this.margemComercial = v; return this; }
-        public Builder totalFreteTruck(double v) { this.totalFreteTruck = v; return this; }
-        public Builder totalFreteCarreta(double v) { this.totalFreteCarreta = v; return this; }
+        public Builder valorMercadoria(BigDecimal v) { this.valorMercadoria = v; return this; }
+        public Builder icmsPercent(BigDecimal v) { this.icmsPercent = v; return this; }
+        public Builder pisCofinsPercent(BigDecimal v) { this.pisCofinsPercent = v; return this; }
+        public Builder margemComercialPercent(BigDecimal v) { this.margemComercialPercent = v; return this; }
+        public Builder adValoremPercent(BigDecimal v) { this.adValoremPercent = v; return this; }
         public Builder veiculoEscolhido(TipoVeiculo v) { this.veiculoEscolhido = v; return this; }
-        public Builder freteTotal(double v) { this.freteTotal = v; return this; }
-        public Builder ajusteManual(double v) { this.ajusteManual = v; return this; }
+        public Builder freteTotal(BigDecimal v) { this.freteTotal = v; return this; }
+        public Builder ajusteManual(BigDecimal v) { this.ajusteManual = v; return this; }
         public Builder justificativaAjuste(String v) { this.justificativaAjuste = v; return this; }
-        public Builder arquivoPdf(String v) { this.arquivoPdf = v; return this; }
+        public Builder caminhoPdf(String v) { this.caminhoPdf = v; return this; }
         public Builder geradaEm(LocalDateTime v) { this.geradaEm = v; return this; }
         public Builder geradaPor(Usuario v) { this.geradaPor = v; return this; }
 
         public Proposta build() {
             Proposta p = new Proposta();
-            p.pedido = pedido; p.freteBaseTruck = freteBaseTruck; p.freteBaseCarreta = freteBaseCarreta;
-            p.pedagioTruck = pedagioTruck; p.pedagioCarreta = pedagioCarreta;
-            p.descargarManualTruck = descargarManualTruck; p.descargarManualCarreta = descargarManualCarreta;
-            p.adValorem = adValorem; p.valorMercadoria = valorMercadoria;
-            p.icmsPercent = icmsPercent; p.pisCofinsPercent = pisCofinsPercent;
-            p.margemComercial = margemComercial; p.totalFreteTruck = totalFreteTruck;
-            p.totalFreteCarreta = totalFreteCarreta; p.veiculoEscolhido = veiculoEscolhido;
-            p.freteTotal = freteTotal; p.ajusteManual = ajusteManual;
-            p.justificativaAjuste = justificativaAjuste; p.arquivoPdf = arquivoPdf;
+            p.pedido = pedido;
+            p.valorMercadoria = valorMercadoria;
+            p.icmsPercent = icmsPercent;
+            p.pisCofinsPercent = pisCofinsPercent;
+            p.margemComercialPercent = margemComercialPercent;
+            p.adValoremPercent = adValoremPercent;
+            p.veiculoEscolhido = veiculoEscolhido;
+            p.freteTotal = freteTotal;
+            p.ajusteManual = ajusteManual;
+            p.justificativaAjuste = justificativaAjuste;
+            p.caminhoPdf = caminhoPdf;
             p.geradaEm = geradaEm != null ? geradaEm : LocalDateTime.now();
             p.geradaPor = geradaPor;
             return p;
         }
     }
 
+    /** Adiciona uma opção de veículo e mantém os dois lados da relação coerentes. */
+    public void adicionarOpcao(PropostaOpcao opcao) {
+        opcao.setProposta(this);
+        this.opcoes.add(opcao);
+    }
+
     public Long getId() { return id; }
     public Pedido getPedido() { return pedido; }
     public void setPedido(Pedido v) { this.pedido = v; }
-    public double getFreteBaseTruck() { return freteBaseTruck; }
-    public void setFreteBaseTruck(double v) { this.freteBaseTruck = v; }
-    public double getFreteBaseCarreta() { return freteBaseCarreta; }
-    public void setFreteBaseCarreta(double v) { this.freteBaseCarreta = v; }
-    public double getPedagioTruck() { return pedagioTruck; }
-    public void setPedagioTruck(double v) { this.pedagioTruck = v; }
-    public double getPedagioCarreta() { return pedagioCarreta; }
-    public void setPedagioCarreta(double v) { this.pedagioCarreta = v; }
-    public double getDescargarManualTruck() { return descargarManualTruck; }
-    public void setDescargarManualTruck(double v) { this.descargarManualTruck = v; }
-    public double getDescargarManualCarreta() { return descargarManualCarreta; }
-    public void setDescargarManualCarreta(double v) { this.descargarManualCarreta = v; }
-    public double getAdValorem() { return adValorem; }
-    public void setAdValorem(double v) { this.adValorem = v; }
-    public double getValorMercadoria() { return valorMercadoria; }
-    public void setValorMercadoria(double v) { this.valorMercadoria = v; }
-    public double getIcmsPercent() { return icmsPercent; }
-    public void setIcmsPercent(double v) { this.icmsPercent = v; }
-    public double getPisCofinsPercent() { return pisCofinsPercent; }
-    public void setPisCofinsPercent(double v) { this.pisCofinsPercent = v; }
-    public double getMargemComercial() { return margemComercial; }
-    public void setMargemComercial(double v) { this.margemComercial = v; }
-    public double getTotalFreteTruck() { return totalFreteTruck; }
-    public void setTotalFreteTruck(double v) { this.totalFreteTruck = v; }
-    public double getTotalFreteCarreta() { return totalFreteCarreta; }
-    public void setTotalFreteCarreta(double v) { this.totalFreteCarreta = v; }
+    public BigDecimal getValorMercadoria() { return valorMercadoria; }
+    public void setValorMercadoria(BigDecimal v) { this.valorMercadoria = v; }
+    public BigDecimal getIcmsPercent() { return icmsPercent; }
+    public void setIcmsPercent(BigDecimal v) { this.icmsPercent = v; }
+    public BigDecimal getPisCofinsPercent() { return pisCofinsPercent; }
+    public void setPisCofinsPercent(BigDecimal v) { this.pisCofinsPercent = v; }
+    public BigDecimal getMargemComercialPercent() { return margemComercialPercent; }
+    public void setMargemComercialPercent(BigDecimal v) { this.margemComercialPercent = v; }
+    public BigDecimal getAdValoremPercent() { return adValoremPercent; }
+    public void setAdValoremPercent(BigDecimal v) { this.adValoremPercent = v; }
     public TipoVeiculo getVeiculoEscolhido() { return veiculoEscolhido; }
     public void setVeiculoEscolhido(TipoVeiculo v) { this.veiculoEscolhido = v; }
-    public double getFreteTotal() { return freteTotal; }
-    public void setFreteTotal(double v) { this.freteTotal = v; }
-    public double getAjusteManual() { return ajusteManual; }
-    public void setAjusteManual(double v) { this.ajusteManual = v; }
+    public BigDecimal getFreteTotal() { return freteTotal; }
+    public void setFreteTotal(BigDecimal v) { this.freteTotal = v; }
+    public BigDecimal getAjusteManual() { return ajusteManual; }
+    public void setAjusteManual(BigDecimal v) { this.ajusteManual = v; }
     public String getJustificativaAjuste() { return justificativaAjuste; }
     public void setJustificativaAjuste(String v) { this.justificativaAjuste = v; }
-    public String getArquivoPdf() { return arquivoPdf; }
-    public void setArquivoPdf(String v) { this.arquivoPdf = v; }
+    public String getCaminhoPdf() { return caminhoPdf; }
+    public void setCaminhoPdf(String v) { this.caminhoPdf = v; }
     public LocalDateTime getGeradaEm() { return geradaEm; }
     public void setGeradaEm(LocalDateTime v) { this.geradaEm = v; }
     public Usuario getGeradaPor() { return geradaPor; }
     public void setGeradaPor(Usuario v) { this.geradaPor = v; }
+    public List<PropostaOpcao> getOpcoes() { return opcoes; }
 }

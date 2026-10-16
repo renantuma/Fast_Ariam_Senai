@@ -23,7 +23,7 @@ class VolumetriaServiceTest {
     @BeforeEach
     void setup() {
         ConfiguracaoFrete config = ConfiguracaoFrete.builder()
-                .capacidadeCarretaM3(60.0).fatorMetrosCarroceria(12.0).build();
+                .volumeUtilCarretaM3(60.0).comprimentoCarroceriaCarretaM(12.0).build();
         when(configRepo.getConfiguracao()).thenReturn(config);
         service = new VolumetriaService(configRepo);
     }

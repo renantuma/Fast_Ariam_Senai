@@ -2,36 +2,35 @@ package com.fastariam.dto;
 
 import com.fastariam.model.TipoVeiculo;
 
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Resultado completo do cálculo de frete para um pedido: dados da rota,
+ * alíquotas usadas e uma {@link OpcaoFreteDTO} por veículo precificado
+ * (hoje Truck e Carreta).
+ */
 public class ResultadoFreteDTO {
 
     private String cidadeDestino;
     private String estadoDestino;
     private double distanciaKm;
+    private BigDecimal valorMercadoria;
 
-    private double freteBaseTruck;
-    private double pedagioTruck;
-    private double descargarTruck;
-    private double adValoremTruck;
-    private double impostosTruck;
-    private double subtotalTruck;
-    private double margemTruck;
-    private double totalTruck;
+    private OpcaoFreteDTO truck;
+    private OpcaoFreteDTO carreta;
 
-    private double freteBaseCarreta;
-    private double pedagioCarreta;
-    private double descargarCarreta;
-    private double adValoremCarreta;
-    private double impostosCarreta;
-    private double subtotalCarreta;
-    private double margemCarreta;
-    private double totalCarreta;
+    private BigDecimal icmsPercent;
+    private BigDecimal pisCofinsPercent;
+    private BigDecimal margemComercialPercent;
+    private BigDecimal adValoremPercent;
 
-    private double icmsPercent;
-    private double pisCofinsPercent;
-    private double margemComercialPercent;
     private double fatorDescargaCliente;
     private TipoVeiculo veiculoRecomendado;
-    private boolean cidadeViaApi;
+
+    /** true quando a tarifa da rota foi gerada por API de roteirização (não estava cadastrada). */
+    private boolean tarifaGeradaViaApi;
 
     public ResultadoFreteDTO() {}
 
@@ -40,108 +39,70 @@ public class ResultadoFreteDTO {
     public static class Builder {
         private String cidadeDestino, estadoDestino;
         private double distanciaKm;
-        private double freteBaseTruck, pedagioTruck, descargarTruck, adValoremTruck;
-        private double impostosTruck, subtotalTruck, margemTruck, totalTruck;
-        private double freteBaseCarreta, pedagioCarreta, descargarCarreta, adValoremCarreta;
-        private double impostosCarreta, subtotalCarreta, margemCarreta, totalCarreta;
-        private double icmsPercent, pisCofinsPercent, margemComercialPercent, fatorDescargaCliente;
+        private BigDecimal valorMercadoria;
+        private OpcaoFreteDTO truck, carreta;
+        private BigDecimal icmsPercent, pisCofinsPercent, margemComercialPercent, adValoremPercent;
+        private double fatorDescargaCliente;
         private TipoVeiculo veiculoRecomendado;
-        private boolean cidadeViaApi;
+        private boolean tarifaGeradaViaApi;
 
         public Builder cidadeDestino(String v) { this.cidadeDestino = v; return this; }
         public Builder estadoDestino(String v) { this.estadoDestino = v; return this; }
         public Builder distanciaKm(double v) { this.distanciaKm = v; return this; }
-        public Builder freteBaseTruck(double v) { this.freteBaseTruck = v; return this; }
-        public Builder pedagioTruck(double v) { this.pedagioTruck = v; return this; }
-        public Builder descargarTruck(double v) { this.descargarTruck = v; return this; }
-        public Builder adValoremTruck(double v) { this.adValoremTruck = v; return this; }
-        public Builder impostosTruck(double v) { this.impostosTruck = v; return this; }
-        public Builder subtotalTruck(double v) { this.subtotalTruck = v; return this; }
-        public Builder margemTruck(double v) { this.margemTruck = v; return this; }
-        public Builder totalTruck(double v) { this.totalTruck = v; return this; }
-        public Builder freteBaseCarreta(double v) { this.freteBaseCarreta = v; return this; }
-        public Builder pedagioCarreta(double v) { this.pedagioCarreta = v; return this; }
-        public Builder descargarCarreta(double v) { this.descargarCarreta = v; return this; }
-        public Builder adValoremCarreta(double v) { this.adValoremCarreta = v; return this; }
-        public Builder impostosCarreta(double v) { this.impostosCarreta = v; return this; }
-        public Builder subtotalCarreta(double v) { this.subtotalCarreta = v; return this; }
-        public Builder margemCarreta(double v) { this.margemCarreta = v; return this; }
-        public Builder totalCarreta(double v) { this.totalCarreta = v; return this; }
-        public Builder icmsPercent(double v) { this.icmsPercent = v; return this; }
-        public Builder pisCofinsPercent(double v) { this.pisCofinsPercent = v; return this; }
-        public Builder margemComercialPercent(double v) { this.margemComercialPercent = v; return this; }
+        public Builder valorMercadoria(BigDecimal v) { this.valorMercadoria = v; return this; }
+        public Builder truck(OpcaoFreteDTO v) { this.truck = v; return this; }
+        public Builder carreta(OpcaoFreteDTO v) { this.carreta = v; return this; }
+        public Builder icmsPercent(BigDecimal v) { this.icmsPercent = v; return this; }
+        public Builder pisCofinsPercent(BigDecimal v) { this.pisCofinsPercent = v; return this; }
+        public Builder margemComercialPercent(BigDecimal v) { this.margemComercialPercent = v; return this; }
+        public Builder adValoremPercent(BigDecimal v) { this.adValoremPercent = v; return this; }
         public Builder fatorDescargaCliente(double v) { this.fatorDescargaCliente = v; return this; }
         public Builder veiculoRecomendado(TipoVeiculo v) { this.veiculoRecomendado = v; return this; }
-        public Builder cidadeViaApi(boolean v) { this.cidadeViaApi = v; return this; }
+        public Builder tarifaGeradaViaApi(boolean v) { this.tarifaGeradaViaApi = v; return this; }
 
         public ResultadoFreteDTO build() {
             ResultadoFreteDTO d = new ResultadoFreteDTO();
             d.cidadeDestino = cidadeDestino; d.estadoDestino = estadoDestino;
-            d.distanciaKm = distanciaKm;
-            d.freteBaseTruck = freteBaseTruck; d.pedagioTruck = pedagioTruck;
-            d.descargarTruck = descargarTruck; d.adValoremTruck = adValoremTruck;
-            d.impostosTruck = impostosTruck; d.subtotalTruck = subtotalTruck;
-            d.margemTruck = margemTruck; d.totalTruck = totalTruck;
-            d.freteBaseCarreta = freteBaseCarreta; d.pedagioCarreta = pedagioCarreta;
-            d.descargarCarreta = descargarCarreta; d.adValoremCarreta = adValoremCarreta;
-            d.impostosCarreta = impostosCarreta; d.subtotalCarreta = subtotalCarreta;
-            d.margemCarreta = margemCarreta; d.totalCarreta = totalCarreta;
+            d.distanciaKm = distanciaKm; d.valorMercadoria = valorMercadoria;
+            d.truck = truck; d.carreta = carreta;
             d.icmsPercent = icmsPercent; d.pisCofinsPercent = pisCofinsPercent;
-            d.margemComercialPercent = margemComercialPercent;
+            d.margemComercialPercent = margemComercialPercent; d.adValoremPercent = adValoremPercent;
             d.fatorDescargaCliente = fatorDescargaCliente;
-            d.veiculoRecomendado = veiculoRecomendado; d.cidadeViaApi = cidadeViaApi;
+            d.veiculoRecomendado = veiculoRecomendado; d.tarifaGeradaViaApi = tarifaGeradaViaApi;
             return d;
         }
     }
 
+    /** As opções precificadas, na ordem de exibição (Truck, depois Carreta). */
+    public Map<TipoVeiculo, OpcaoFreteDTO> getOpcoes() {
+        Map<TipoVeiculo, OpcaoFreteDTO> opcoes = new LinkedHashMap<>();
+        opcoes.put(TipoVeiculo.TRUCK, truck);
+        opcoes.put(TipoVeiculo.CARRETA, carreta);
+        return opcoes;
+    }
+
+    /**
+     * Opção de preço aplicável ao veículo escolhido.
+     *
+     * <p>Regra atual (mantida do sistema original): só existem preços para
+     * Truck e Carreta; Carreta usa o preço de carreta e qualquer outro veículo
+     * usa o preço de Truck.</p>
+     */
+    public OpcaoFreteDTO opcaoPara(TipoVeiculo veiculo) {
+        return veiculo == TipoVeiculo.CARRETA ? carreta : truck;
+    }
+
     public String getCidadeDestino() { return cidadeDestino; }
-    public void setCidadeDestino(String v) { this.cidadeDestino = v; }
     public String getEstadoDestino() { return estadoDestino; }
-    public void setEstadoDestino(String v) { this.estadoDestino = v; }
     public double getDistanciaKm() { return distanciaKm; }
-    public void setDistanciaKm(double v) { this.distanciaKm = v; }
-    public double getFreteBaseTruck() { return freteBaseTruck; }
-    public void setFreteBaseTruck(double v) { this.freteBaseTruck = v; }
-    public double getPedagioTruck() { return pedagioTruck; }
-    public void setPedagioTruck(double v) { this.pedagioTruck = v; }
-    public double getDescargarTruck() { return descargarTruck; }
-    public void setDescargarTruck(double v) { this.descargarTruck = v; }
-    public double getAdValoremTruck() { return adValoremTruck; }
-    public void setAdValoremTruck(double v) { this.adValoremTruck = v; }
-    public double getImpostosTruck() { return impostosTruck; }
-    public void setImpostosTruck(double v) { this.impostosTruck = v; }
-    public double getSubtotalTruck() { return subtotalTruck; }
-    public void setSubtotalTruck(double v) { this.subtotalTruck = v; }
-    public double getMargemTruck() { return margemTruck; }
-    public void setMargemTruck(double v) { this.margemTruck = v; }
-    public double getTotalTruck() { return totalTruck; }
-    public void setTotalTruck(double v) { this.totalTruck = v; }
-    public double getFreteBaseCarreta() { return freteBaseCarreta; }
-    public void setFreteBaseCarreta(double v) { this.freteBaseCarreta = v; }
-    public double getPedagioCarreta() { return pedagioCarreta; }
-    public void setPedagioCarreta(double v) { this.pedagioCarreta = v; }
-    public double getDescargarCarreta() { return descargarCarreta; }
-    public void setDescargarCarreta(double v) { this.descargarCarreta = v; }
-    public double getAdValoremCarreta() { return adValoremCarreta; }
-    public void setAdValoremCarreta(double v) { this.adValoremCarreta = v; }
-    public double getImpostosCarreta() { return impostosCarreta; }
-    public void setImpostosCarreta(double v) { this.impostosCarreta = v; }
-    public double getSubtotalCarreta() { return subtotalCarreta; }
-    public void setSubtotalCarreta(double v) { this.subtotalCarreta = v; }
-    public double getMargemCarreta() { return margemCarreta; }
-    public void setMargemCarreta(double v) { this.margemCarreta = v; }
-    public double getTotalCarreta() { return totalCarreta; }
-    public void setTotalCarreta(double v) { this.totalCarreta = v; }
-    public double getIcmsPercent() { return icmsPercent; }
-    public void setIcmsPercent(double v) { this.icmsPercent = v; }
-    public double getPisCofinsPercent() { return pisCofinsPercent; }
-    public void setPisCofinsPercent(double v) { this.pisCofinsPercent = v; }
-    public double getMargemComercialPercent() { return margemComercialPercent; }
-    public void setMargemComercialPercent(double v) { this.margemComercialPercent = v; }
+    public BigDecimal getValorMercadoria() { return valorMercadoria; }
+    public OpcaoFreteDTO getTruck() { return truck; }
+    public OpcaoFreteDTO getCarreta() { return carreta; }
+    public BigDecimal getIcmsPercent() { return icmsPercent; }
+    public BigDecimal getPisCofinsPercent() { return pisCofinsPercent; }
+    public BigDecimal getMargemComercialPercent() { return margemComercialPercent; }
+    public BigDecimal getAdValoremPercent() { return adValoremPercent; }
     public double getFatorDescargaCliente() { return fatorDescargaCliente; }
-    public void setFatorDescargaCliente(double v) { this.fatorDescargaCliente = v; }
     public TipoVeiculo getVeiculoRecomendado() { return veiculoRecomendado; }
-    public void setVeiculoRecomendado(TipoVeiculo v) { this.veiculoRecomendado = v; }
-    public boolean isCidadeViaApi() { return cidadeViaApi; }
-    public void setCidadeViaApi(boolean v) { this.cidadeViaApi = v; }
+    public boolean isTarifaGeradaViaApi() { return tarifaGeradaViaApi; }
 }

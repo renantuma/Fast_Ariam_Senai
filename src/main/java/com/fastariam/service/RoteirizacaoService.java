@@ -4,6 +4,7 @@ import com.fastariam.model.Cidade;
 import com.fastariam.model.TarifaFrete;
 import com.fastariam.repository.CidadeRepository;
 import com.fastariam.repository.TarifaFreteRepository;
+import com.fastariam.util.Dinheiro;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,11 +66,11 @@ public class RoteirizacaoService {
         TarifaFrete tarifa = TarifaFrete.builder()
                 .cidade(cidade)
                 .distanciaKm(distanciaKm)
-                .pedagioTruck(distanciaKm * PEDAGIO_KM_TRUCK)
-                .pedagioCarreta(distanciaKm * PEDAGIO_KM_CARRETA)
-                .freteBaseKmTruck(FRETE_KM_TRUCK_PADRAO)
-                .freteBaseKmCarreta(FRETE_KM_CARRETA_PADRAO)
-                .origemApi(true)
+                .pedagioTruck(Dinheiro.reais(distanciaKm * PEDAGIO_KM_TRUCK))
+                .pedagioCarreta(Dinheiro.reais(distanciaKm * PEDAGIO_KM_CARRETA))
+                .valorPorKmTruck(Dinheiro.reais(FRETE_KM_TRUCK_PADRAO))
+                .valorPorKmCarreta(Dinheiro.reais(FRETE_KM_CARRETA_PADRAO))
+                .geradaViaApi(true)
                 .build();
 
         return tarifaRepository.save(tarifa);

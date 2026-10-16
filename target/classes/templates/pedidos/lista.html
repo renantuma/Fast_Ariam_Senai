@@ -3,10 +3,14 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Pedidos — Fast Ariam</title>
 </head>
+
+
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
 <body>
 
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div th:replace="~{fragments/layout :: overlay}"></div>
 
 <header id="topbar">
   <div class="d-flex align-items-center gap-2">
@@ -217,6 +221,5 @@ const ListaPedidos = (() => {
 })();
 </script>
 
-<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>

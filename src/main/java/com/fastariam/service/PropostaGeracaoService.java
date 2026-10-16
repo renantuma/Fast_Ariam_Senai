@@ -21,10 +21,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 @Service
 public class PropostaGeracaoService {
@@ -73,7 +75,7 @@ public class PropostaGeracaoService {
             adicionarRodape(doc, pedido);
         }
 
-        proposta.setArquivoPdf(caminho);
+        proposta.setCaminhoPdf(caminho);
         propostaRepository.save(proposta);
 
         log.info("Proposta PDF gerada: {}", caminho);
@@ -173,7 +175,7 @@ public class PropostaGeracaoService {
             addCellTabela(t, descricao, bg, TextAlignment.LEFT);
             addCellTabela(t, String.valueOf(item.getQuantidade()), bg, TextAlignment.CENTER);
             addCellTabela(t, tipo, bg, TextAlignment.CENTER);
-            addCellTabela(t, formatarNumero(item.getVolumeM3()), bg, TextAlignment.RIGHT);
+            addCellTabela(t, formatarNumero(item.getVolumeAjustadoM3()), bg, TextAlignment.RIGHT);
         }
 
         doc.add(t);
@@ -187,9 +189,9 @@ public class PropostaGeracaoService {
         t.setBorder(Border.NO_BORDER);
 
         adicionarLinhaInfo(t, "Volume Total", formatarNumero(pedido.getVolumeTotalM3()) + " m³");
-        adicionarLinhaInfo(t, "Metros de Carroceria", formatarNumero(pedido.getMetrosCarroceria()) + " m");
-        adicionarLinhaInfo(t, "Com Margem NVIA (+10%)", formatarNumero(pedido.getMetrosComMargemNvia()) + " m");
-        adicionarLinhaInfo(t, "Com Margem Venda (+20%)", formatarNumero(pedido.getMetrosComMargemVenda()) + " m");
+        adicionarLinhaInfo(t, "Metros de Carroceria", formatarNumero(pedido.getComprimentoOcupadoM()) + " m");
+        adicionarLinhaInfo(t, "Com Margem NVIA (+10%)", formatarNumero(pedido.getComprimentoMargemNviaM()) + " m");
+        adicionarLinhaInfo(t, "Com Margem Venda (+20%)", formatarNumero(pedido.getComprimentoMargemVendaM()) + " m");
 
         doc.add(t);
     }
@@ -198,59 +200,71 @@ public class PropostaGeracaoService {
         doc.add(new Paragraph("COMPOSIÇÃO DO FRETE")
                 .setFontSize(11).setBold().setFontColor(COR_PRIMARIA).setMarginBottom(6));
 
-        Table t = new Table(UnitValue.createPercentArray(new float[]{40, 30, 30})).useAllAvailableWidth();
+        List<PropostaOpcao> opcoes = proposta.getOpcoes();
+
+        // 1ª coluna = componente (40%); o restante é dividido entre os veículos.
+        float[] larguras = new float[opcoes.size() + 1];
+        larguras[0] = 40f;
+        for (int i = 1; i < larguras.length; i++) {
+            larguras[i] = 60f / opcoes.size();
+        }
+        Table t = new Table(UnitValue.createPercentArray(larguras)).useAllAvailableWidth();
         t.setBorder(Border.NO_BORDER);
 
-        // Cabeçalho
-        for (String col : new String[]{"COMPONENTE", "TRUCK", "CARRETA"}) {
-            t.addHeaderCell(new Cell().add(new Paragraph(col).setFontSize(8).setBold().setFontColor(ColorConstants.WHITE))
-                    .setBackgroundColor(COR_PRIMARIA).setBorder(Border.NO_BORDER)
-                    .setPadding(6).setTextAlignment(TextAlignment.CENTER));
+        // Cabeçalho: COMPONENTE + um título por veículo (TRUCK, CARRETA, ...)
+        t.addHeaderCell(celulaCabecalho("COMPONENTE"));
+        for (PropostaOpcao opcao : opcoes) {
+            t.addHeaderCell(celulaCabecalho(opcao.getTipoVeiculo().name()));
         }
 
-        addLinhaFrete(t, "Frete Base", proposta.getFreteBaseTruck(), proposta.getFreteBaseCarreta(), false);
-        addLinhaFrete(t, "Pedágio", proposta.getPedagioTruck(), proposta.getPedagioCarreta(), false);
-        addLinhaFrete(t, "Descarga", proposta.getDescargarManualTruck(), proposta.getDescargarManualCarreta(), false);
-        addLinhaFrete(t, "Ad Valorem", proposta.getAdValorem(), proposta.getAdValorem(), false);
-        addLinhaFrete(t, String.format("Impostos (ICMS %.0f%% + PIS/COFINS %.2f%%)",
+        adicionarLinhaFrete(t, "Frete Base", opcoes, PropostaOpcao::getFreteBase);
+        adicionarLinhaFrete(t, "Pedágio", opcoes, PropostaOpcao::getPedagio);
+        adicionarLinhaFrete(t, "Descarga", opcoes, PropostaOpcao::getCustoDescarga);
+        adicionarLinhaFrete(t, "Ad Valorem", opcoes, PropostaOpcao::getAdValorem);
+        adicionarLinhaFrete(t, String.format("Impostos (ICMS %.0f%% + PIS/COFINS %.2f%%)",
                         proposta.getIcmsPercent(), proposta.getPisCofinsPercent()),
-                0, 0, false); // simplificado
-        addLinhaFrete(t, String.format("Margem Comercial (%.0f%%)", proposta.getMargemComercial()),
-                0, 0, false); // simplificado
+                opcoes, PropostaOpcao::getImpostos);
+        adicionarLinhaFrete(t, String.format("Margem Comercial (%.0f%%)", proposta.getMargemComercialPercent()),
+                opcoes, PropostaOpcao::getMargemComercialValor);
 
         // Linha de total destacada
-        Cell cTLabel = new Cell().add(new Paragraph("TOTAL ESTIMADO").setFontSize(10).setBold().setFontColor(ColorConstants.WHITE))
-                .setBackgroundColor(COR_SECUNDARIA).setBorder(Border.NO_BORDER).setPadding(8);
-        Cell cTTruck = new Cell().add(new Paragraph(formatarMoeda(proposta.getTotalFreteTruck())).setFontSize(10).setBold().setFontColor(ColorConstants.WHITE).setTextAlignment(TextAlignment.RIGHT))
-                .setBackgroundColor(COR_SECUNDARIA).setBorder(Border.NO_BORDER).setPadding(8);
-        Cell cTCarreta = new Cell().add(new Paragraph(formatarMoeda(proposta.getTotalFreteCarreta())).setFontSize(10).setBold().setFontColor(ColorConstants.WHITE).setTextAlignment(TextAlignment.RIGHT))
-                .setBackgroundColor(COR_SECUNDARIA).setBorder(Border.NO_BORDER).setPadding(8);
-        t.addCell(cTLabel);
-        t.addCell(cTTruck);
-        t.addCell(cTCarreta);
+        t.addCell(new Cell().add(new Paragraph("TOTAL ESTIMADO").setFontSize(10).setBold().setFontColor(ColorConstants.WHITE))
+                .setBackgroundColor(COR_SECUNDARIA).setBorder(Border.NO_BORDER).setPadding(8));
+        for (PropostaOpcao opcao : opcoes) {
+            t.addCell(new Cell().add(new Paragraph(formatarMoeda(opcao.getTotal()))
+                            .setFontSize(10).setBold().setFontColor(ColorConstants.WHITE)
+                            .setTextAlignment(TextAlignment.RIGHT))
+                    .setBackgroundColor(COR_SECUNDARIA).setBorder(Border.NO_BORDER).setPadding(8));
+        }
 
         doc.add(t);
 
-        if (proposta.getAjusteManual() != 0) {
+        if (proposta.getAjusteManual().signum() != 0) {
             doc.add(new Paragraph(String.format("* Ajuste manual aplicado: %s — %s",
                     formatarMoeda(proposta.getAjusteManual()), proposta.getJustificativaAjuste()))
                     .setFontSize(8).setFontColor(new DeviceRgb(130, 130, 130)).setMarginTop(4));
         }
     }
 
-    private void addLinhaFrete(Table t, String label, double vTruck, double vCarreta, boolean destaque) {
-        DeviceRgb bg = destaque ? COR_CINZA_CLARO : new DeviceRgb(255, 255, 255);
-        Cell c1 = new Cell().add(new Paragraph(label).setFontSize(9).setFontColor(COR_TEXTO))
-                .setBackgroundColor(bg).setBorder(Border.NO_BORDER).setPadding(5);
-        Cell c2 = new Cell().add(new Paragraph(vTruck > 0 ? formatarMoeda(vTruck) : "—").setFontSize(9)
-                        .setTextAlignment(TextAlignment.RIGHT).setFontColor(COR_TEXTO))
-                .setBackgroundColor(bg).setBorder(Border.NO_BORDER).setPadding(5);
-        Cell c3 = new Cell().add(new Paragraph(vCarreta > 0 ? formatarMoeda(vCarreta) : "—").setFontSize(9)
-                        .setTextAlignment(TextAlignment.RIGHT).setFontColor(COR_TEXTO))
-                .setBackgroundColor(bg).setBorder(Border.NO_BORDER).setPadding(5);
-        t.addCell(c1);
-        t.addCell(c2);
-        t.addCell(c3);
+    private Cell celulaCabecalho(String texto) {
+        return new Cell().add(new Paragraph(texto).setFontSize(8).setBold().setFontColor(ColorConstants.WHITE))
+                .setBackgroundColor(COR_PRIMARIA).setBorder(Border.NO_BORDER)
+                .setPadding(6).setTextAlignment(TextAlignment.CENTER);
+    }
+
+    /** Uma linha da tabela de frete: o rótulo e o valor de cada veículo ("—" quando zero). */
+    private void adicionarLinhaFrete(Table t, String label, List<PropostaOpcao> opcoes,
+                                      Function<PropostaOpcao, BigDecimal> valor) {
+        DeviceRgb branco = new DeviceRgb(255, 255, 255);
+        t.addCell(new Cell().add(new Paragraph(label).setFontSize(9).setFontColor(COR_TEXTO))
+                .setBackgroundColor(branco).setBorder(Border.NO_BORDER).setPadding(5));
+        for (PropostaOpcao opcao : opcoes) {
+            BigDecimal v = valor.apply(opcao);
+            String texto = (v != null && v.signum() > 0) ? formatarMoeda(v) : "—";
+            t.addCell(new Cell().add(new Paragraph(texto).setFontSize(9)
+                            .setTextAlignment(TextAlignment.RIGHT).setFontColor(COR_TEXTO))
+                    .setBackgroundColor(branco).setBorder(Border.NO_BORDER).setPadding(5));
+        }
     }
 
     private void adicionarLinhaInfo(Table t, String label, String valor) {
@@ -289,7 +303,7 @@ public class PropostaGeracaoService {
         return String.format(Locale.forLanguageTag("pt-BR"), "%.3f", v);
     }
 
-    private String formatarMoeda(double v) {
+    private String formatarMoeda(BigDecimal v) {
         return String.format(Locale.forLanguageTag("pt-BR"), "R$ %,.2f", v);
     }
 }

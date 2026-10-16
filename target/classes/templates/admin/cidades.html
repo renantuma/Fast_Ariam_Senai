@@ -28,7 +28,7 @@
 
   <form th:action="@{/admin/cidades}" method="get" class="fa-card mb-3 d-flex align-items-end gap-3">
     <div>
-      <label class="form-label" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6B7280;">Filtrar por Estado</label>
+      <label class="form-label" style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--fa-muted);">Filtrar por Estado</label>
       <select name="estado" class="form-select form-select-sm" style="min-width:120px;">
         <option value="">Todos</option>
         <option th:each="e : ${estados}" th:value="${e}" th:text="${e}"
@@ -59,14 +59,14 @@
               <span class="badge bg-secondary ms-1" th:text="${c.estado}"></span>
             </td>
             <td th:text="${c.distanciaKm + ' km'}"></td>
-            <td th:text="'R$ ' + ${#numbers.formatDecimal(c.freteBaseKmTruck,1,'POINT',2,'COMMA')}"></td>
-            <td th:text="'R$ ' + ${#numbers.formatDecimal(c.freteBaseKmCarreta,1,'POINT',2,'COMMA')}"></td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(c.valorPorKmTruck,1,'POINT',2,'COMMA')}"></td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(c.valorPorKmCarreta,1,'POINT',2,'COMMA')}"></td>
             <td th:text="'R$ ' + ${#numbers.formatDecimal(c.pedagioTruck,1,'POINT',2,'COMMA')}"></td>
             <td th:text="'R$ ' + ${#numbers.formatDecimal(c.pedagioCarreta,1,'POINT',2,'COMMA')}"></td>
             <td th:text="${c.icmsPercent + '%'}"></td>
             <td>
-              <span th:if="${c.origemApi}" class="badge bg-info text-dark">API</span>
-              <span th:unless="${c.origemApi}" class="badge bg-light text-dark">Manual</span>
+              <span th:if="${c.geradaViaApi}" class="badge bg-info text-dark">API</span>
+              <span th:unless="${c.geradaViaApi}" class="badge bg-light text-dark">Manual</span>
             </td>
             <td>
               <form th:action="@{/admin/cidades/{id}/excluir(id=${c.id})}" method="post" class="d-inline"
@@ -101,9 +101,9 @@
             <div class="col-md-4"><label class="form-label">Distância (km) *</label>
               <input type="number" name="distanciaKm" class="form-control" step="1" min="0" required/></div>
             <div class="col-md-4"><label class="form-label">Frete/km Truck (R$) *</label>
-              <input type="number" name="freteBaseKmTruck" class="form-control" step="0.01" required value="4.50"/></div>
+              <input type="number" name="valorPorKmTruck" class="form-control" step="0.01" required value="4.50"/></div>
             <div class="col-md-4"><label class="form-label">Frete/km Carreta (R$) *</label>
-              <input type="number" name="freteBaseKmCarreta" class="form-control" step="0.01" required value="5.80"/></div>
+              <input type="number" name="valorPorKmCarreta" class="form-control" step="0.01" required value="5.80"/></div>
             <div class="col-md-4"><label class="form-label">Pedágio Truck (R$)</label>
               <input type="number" name="pedagioTruck" class="form-control" step="0.01" value="0"/></div>
             <div class="col-md-4"><label class="form-label">Pedágio Carreta (R$)</label>

@@ -25,7 +25,11 @@ public class ItemPedido {
     private String descricaoOriginal;
 
     private int quantidade;
-    private double volumeM3;
+
+    /** Volume (m³) deste item já com o fator de ajuste da categoria aplicado. */
+    @Column(name = "volume_ajustado_m3")
+    private double volumeAjustadoM3;
+
     private boolean identificadoAutomaticamente;
 
     public ItemPedido() {}
@@ -37,7 +41,7 @@ public class ItemPedido {
         private Produto produto;
         private String codigoOriginal, descricaoOriginal;
         private int quantidade;
-        private double volumeM3;
+        private double volumeAjustadoM3;
         private boolean identificadoAutomaticamente;
 
         public Builder pedido(Pedido v) { this.pedido = v; return this; }
@@ -45,14 +49,14 @@ public class ItemPedido {
         public Builder codigoOriginal(String v) { this.codigoOriginal = v; return this; }
         public Builder descricaoOriginal(String v) { this.descricaoOriginal = v; return this; }
         public Builder quantidade(int v) { this.quantidade = v; return this; }
-        public Builder volumeM3(double v) { this.volumeM3 = v; return this; }
+        public Builder volumeAjustadoM3(double v) { this.volumeAjustadoM3 = v; return this; }
         public Builder identificadoAutomaticamente(boolean v) { this.identificadoAutomaticamente = v; return this; }
 
         public ItemPedido build() {
             ItemPedido i = new ItemPedido();
             i.pedido = pedido; i.produto = produto;
             i.codigoOriginal = codigoOriginal; i.descricaoOriginal = descricaoOriginal;
-            i.quantidade = quantidade; i.volumeM3 = volumeM3;
+            i.quantidade = quantidade; i.volumeAjustadoM3 = volumeAjustadoM3;
             i.identificadoAutomaticamente = identificadoAutomaticamente;
             return i;
         }
@@ -69,8 +73,8 @@ public class ItemPedido {
     public void setDescricaoOriginal(String v) { this.descricaoOriginal = v; }
     public int getQuantidade() { return quantidade; }
     public void setQuantidade(int v) { this.quantidade = v; }
-    public double getVolumeM3() { return volumeM3; }
-    public void setVolumeM3(double v) { this.volumeM3 = v; }
+    public double getVolumeAjustadoM3() { return volumeAjustadoM3; }
+    public void setVolumeAjustadoM3(double v) { this.volumeAjustadoM3 = v; }
     public boolean isIdentificadoAutomaticamente() { return identificadoAutomaticamente; }
     public void setIdentificadoAutomaticamente(boolean v) { this.identificadoAutomaticamente = v; }
 }

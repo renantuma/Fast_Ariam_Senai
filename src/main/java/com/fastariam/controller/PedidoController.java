@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -68,9 +69,19 @@ public class PedidoController {
                              @AuthenticationPrincipal UserDetails ud,
                              RedirectAttributes ra) throws IOException {
         Usuario usuario = usuarioRepo.findByUsername(ud.getUsername()).orElseThrow();
-        List<ItemExtraidoDTO> itens = pedidoService.uploadPedidoPdf(arquivo, usuario);
-        ra.addFlashAttribute("itensExtraidos", itens);
-        ra.addFlashAttribute("nomeArquivo", arquivo.getOriginalFilename());
+        try {
+            List<ItemExtraidoDTO> itens = pedidoService.uploadPedidoPdf(arquivo, usuario);
+            ra.addFlashAttribute("itensExtraidos", itens);
+            ra.addFlashAttribute("nomeArquivo", arquivo.getOriginalFilename());
+            if (itens.isEmpty()) {
+                ra.addFlashAttribute("erro", "Nenhum item foi identificado automaticamente neste PDF. " +
+                        "Isso pode ocorrer com PDFs escaneados (imagem) ou em um layout diferente do padrão — " +
+                        "adicione os itens manualmente abaixo.");
+            }
+        } catch (PdfExtracaoException e) {
+            ra.addFlashAttribute("erro", e.getMessage());
+            return "redirect:/pedidos/novo";
+        }
         return "redirect:/pedidos/revisar-itens";
     }
 
@@ -130,7 +141,7 @@ public class PedidoController {
                                  @RequestParam String nomeCidade,
                                  @RequestParam String estado,
                                  @RequestParam(defaultValue = "0") Long clienteId,
-                                 @RequestParam(defaultValue = "0") double valorMercadoria,
+                                 @RequestParam(defaultValue = "0") BigDecimal valorMercadoria,
                                  RedirectAttributes ra) {
         ResultadoFreteDTO frete = pedidoService.calcularFrete(id, nomeCidade, estado, clienteId, valorMercadoria);
         ra.addFlashAttribute("frete", frete);
@@ -148,12 +159,12 @@ public class PedidoController {
     @PostMapping("/{id}/gerar-proposta")
     public String gerarProposta(@PathVariable Long id,
                                  @RequestParam String veiculoEscolhido,
-                                 @RequestParam(defaultValue = "0") double ajusteManual,
+                                 @RequestParam(defaultValue = "0") BigDecimal ajusteManual,
                                  @RequestParam(required = false) String justificativa,
                                  @RequestParam String nomeCidade,
                                  @RequestParam String estado,
                                  @RequestParam(defaultValue = "0") Long clienteId,
-                                 @RequestParam(defaultValue = "0") double valorMercadoria,
+                                 @RequestParam(defaultValue = "0") BigDecimal valorMercadoria,
                                  @AuthenticationPrincipal UserDetails ud,
                                  RedirectAttributes ra) throws IOException {
 

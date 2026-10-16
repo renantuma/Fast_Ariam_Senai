@@ -2,6 +2,7 @@ package com.fastariam.config;
 
 import com.fastariam.model.*;
 import com.fastariam.repository.*;
+import com.fastariam.util.Dinheiro;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -52,11 +53,14 @@ public class DataInitializer implements CommandLineRunner {
     private void initConfiguracao() {
         if (configRepo.count() > 0) return;
         configRepo.save(ConfiguracaoFrete.builder()
-                .descargarEmpilhadeira(350.00).descargarManualTruck(280.00)
-                .descargarManualCarreta(420.00).pisCofinsPercent(9.25)
-                .margemComercialPercent(20.0).adValoremDefault(0.3)
-                .capacidadeCarretaM3(60.0).capacidadeContainerM3(45.0)
-                .fatorMetrosCarroceria(12.0).build());
+                .custoDescargaEmpilhadeira(Dinheiro.reais(350.00))
+                .custoDescargaManualTruck(Dinheiro.reais(280.00))
+                .custoDescargaManualCarreta(Dinheiro.reais(420.00))
+                .pisCofinsPercent(Dinheiro.reais(9.25))
+                .margemComercialPercent(Dinheiro.reais(20.0))
+                .adValoremPercent(Dinheiro.reais(0.3))
+                .volumeUtilCarretaM3(60.0)
+                .comprimentoCarroceriaCarretaM(12.0).build());
     }
 
     private void initProdutosLinhaSeca() {
@@ -156,11 +160,11 @@ public class DataInitializer implements CommandLineRunner {
             tarifaRepo.save(TarifaFrete.builder()
                     .cidade(cidade)
                     .distanciaKm(s.km())
-                    .freteBaseKmTruck(s.ftTruck())
-                    .freteBaseKmCarreta(s.ftCarreta())
-                    .pedagioTruck(s.pedTruck())
-                    .pedagioCarreta(s.pedCarreta())
-                    .origemApi(false)
+                    .valorPorKmTruck(Dinheiro.reais(s.ftTruck()))
+                    .valorPorKmCarreta(Dinheiro.reais(s.ftCarreta()))
+                    .pedagioTruck(Dinheiro.reais(s.pedTruck()))
+                    .pedagioCarreta(Dinheiro.reais(s.pedCarreta()))
+                    .geradaViaApi(false)
                     .build());
         }
         log.info(specs.size() + " cidades + tarifas cadastradas");
@@ -168,7 +172,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private Produto p(String cod,String desc,String ant,TipoProduto tipo,CategoriaLinhaSeca cat,double fator) {
         return Produto.builder().codigo(cod).descricao(desc).nomeAntigo(ant)
-                .tipo(tipo).categoria(cat).fatorQtdM3(fator).ativo(true).build();
+                .tipo(tipo).categoria(cat).pecasPorM3(fator).ativo(true).build();
     }
     private Produto r(String cod,String desc,double comp,double larg,double alt) {
         return Produto.builder().codigo(cod).descricao(desc)

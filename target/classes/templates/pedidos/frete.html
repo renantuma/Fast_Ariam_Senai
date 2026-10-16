@@ -4,17 +4,19 @@
 <head th:replace="~{fragments/layout :: head}">
   <title>Fast Ariam</title>
 </head>
+
+
+<div th:replace="~{fragments/layout :: overlay}"></div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
 <body>
 <div th:replace="~{fragments/layout :: sidebar}"></div>
-<div th:replace="~{fragments/layout :: overlay}"></div>
-<header id="topbar">
-  <div class="d-flex align-items-center gap-2" style="min-width:0;">
-    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu">
-      <i class="bi bi-list" aria-hidden="true"></i>
-    </button>
-    <span class="topbar-title text-truncate"><i class="bi bi-calculator me-2 text-muted" aria-hidden="true"></i>Cálculo de Frete</span>
+<div id="topbar">
+  <div class="d-flex align-items-center gap-2">
+    <button class="topbar-menu-btn" type="button" onclick="FastAriam.sidebar.toggle()" aria-label="Abrir menu"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <span class="topbar-title"><i class="bi bi-calculator me-2 text-muted"></i>Cálculo de Frete</span>
   </div>
-</header>
+</div>
 
 <main id="main">
   <div class="step-bar mb-4">
@@ -34,15 +36,15 @@
         <hr style="border-color:rgba(255,255,255,.2); margin: 12px 0;"/>
         <div class="d-flex justify-content-between" style="font-size:.82rem;">
           <span style="opacity:.75;">Metros carroceria</span>
-          <span th:text="${#numbers.formatDecimal(pedido.metrosCarroceria,1,2) + ' m'}"></span>
+          <span th:text="${#numbers.formatDecimal(pedido.comprimentoOcupadoM,1,2) + ' m'}"></span>
         </div>
         <div class="d-flex justify-content-between" style="font-size:.82rem;">
           <span style="opacity:.75;">Com margem NVIA (+10%)</span>
-          <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemNvia,1,2) + ' m'}"></span>
+          <span th:text="${#numbers.formatDecimal(pedido.comprimentoMargemNviaM,1,2) + ' m'}"></span>
         </div>
         <div class="d-flex justify-content-between" style="font-size:.82rem;">
           <span style="opacity:.75;">Com margem Venda (+20%)</span>
-          <span th:text="${#numbers.formatDecimal(pedido.metrosComMargemVenda,1,2) + ' m'}"></span>
+          <span th:text="${#numbers.formatDecimal(pedido.comprimentoMargemVendaM,1,2) + ' m'}"></span>
         </div>
       </div>
 
@@ -116,34 +118,34 @@
         <div class="fa-card-title mb-3">
           Resultado do Frete —
           <span th:text="${frete.cidadeDestino + '/' + frete.estadoDestino}"></span>
-          <span class="badge bg-secondary ms-2" th:if="${frete.cidadeViaApi}">via API</span>
+          <span class="badge bg-secondary ms-2" th:if="${frete.tarifaGeradaViaApi}">via API</span>
         </div>
         <div class="row g-3">
           <div class="col-md-6">
             <div class="frete-card" onclick="selecionarVeiculo(this,'TRUCK')">
               <div class="frete-tipo mb-1"><i class="bi bi-truck me-2"></i>Truck</div>
-              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalTruck,1,'POINT',2,'COMMA')}"></div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.truck.total,1,'POINT',2,'COMMA')}"></div>
               <div class="text-muted" style="font-size:.78rem; margin-top:6px;">
-                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.freteBaseTruck,1,'POINT',2,'COMMA')}"></span>
-                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.pedagioTruck,1,'POINT',2,'COMMA')}"></span>
+                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.truck.freteBase,1,'POINT',2,'COMMA')}"></span>
+                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.truck.pedagio,1,'POINT',2,'COMMA')}"></span>
               </div>
             </div>
           </div>
           <div class="col-md-6">
             <div class="frete-card" onclick="selecionarVeiculo(this,'CARRETA')">
               <div class="frete-tipo mb-1"><i class="bi bi-truck me-2"></i>Carreta</div>
-              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.totalCarreta,1,'POINT',2,'COMMA')}"></div>
+              <div class="frete-total" th:text="'R$ ' + ${#numbers.formatDecimal(frete.carreta.total,1,'POINT',2,'COMMA')}"></div>
               <div class="text-muted" style="font-size:.78rem; margin-top:6px;">
-                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.freteBaseCarreta,1,'POINT',2,'COMMA')}"></span>
-                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.pedagioCarreta,1,'POINT',2,'COMMA')}"></span>
+                Frete base: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.carreta.freteBase,1,'POINT',2,'COMMA')}"></span>
+                | Pedágio: <span th:text="'R$ ' + ${#numbers.formatDecimal(frete.carreta.pedagio,1,'POINT',2,'COMMA')}"></span>
               </div>
             </div>
           </div>
         </div>
         <div class="text-muted mt-2" style="font-size:.78rem;">
-          ICMS: <th:block th:text="${frete.icmsPercent}"></th:block>%
-          | PIS/COFINS: <th:block th:text="${frete.pisCofinsPercent}"></th:block>%
-          | Margem Comercial: <th:block th:text="${frete.margemComercialPercent}"></th:block>%
+          ICMS: <th:block th:text="${#numbers.formatDecimal(frete.icmsPercent,1,2)}"></th:block>%
+          | PIS/COFINS: <th:block th:text="${#numbers.formatDecimal(frete.pisCofinsPercent,1,2)}"></th:block>%
+          | Margem Comercial: <th:block th:text="${#numbers.formatDecimal(frete.margemComercialPercent,1,2)}"></th:block>%
           | Distância: <th:block th:text="${frete.distanciaKm}"></th:block> km
         </div>
 
@@ -200,6 +202,5 @@ function selecionarVeiculo(el, tipo) {
   el.classList.add('selected');
 }
 </script>
-<div th:replace="~{fragments/layout :: scripts}"></div>
 </body>
 </html>
